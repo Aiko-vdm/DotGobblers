@@ -12,7 +12,7 @@ In `my_team.py` werd(en) de klasse(n) geïmplementeerd waarmee een team van twee
 - **Onderwijsteam:** Lynn Houthuys, Arno Temmerman
 
 ### Groepsleden
-- Student 1 Naam - e-mail - Github id
+- Elisey Gretchko - elisey.sergejevitsj.gretchko@vub.be - 95651363
 - Student 2 Naam - e-mail - Github id
 
 
