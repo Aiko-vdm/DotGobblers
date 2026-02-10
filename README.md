@@ -8,7 +8,7 @@ In `my_team.py` werd(en) de klasse(n) geïmplementeerd waarmee een team van twee
 ### Studiedeel
 - **Opleiding:** [Bachelor in de artificiële intelligentie](https://caliweb.vub.be/?page=program&id=00721)
 - **Studiedeel:** [AI Programmeerproject](https://caliweb.vub.be/?page=course-offers&id=011970)
-- **Academiejaar:** _[academiejaar]_
+- **Academiejaar:** 2025-2026
 - **Onderwijsteam:** Lynn Houthuys, Arno Temmerman
 
 ### Groepsleden
