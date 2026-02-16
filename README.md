@@ -13,7 +13,7 @@ In `my_team.py` werd(en) de klasse(n) geïmplementeerd waarmee een team van twee
 
 ### Groepsleden
 - Elisey Gretchko - elisey.sergejevitsj.gretchko@vub.be - 95651363
-- Student 2 Naam - e-mail - Github id
+- Aiko Vandermeiren - aiko.vandermeiren@vub.be -  237604442
 
 
 ## 📚 Documentatie
