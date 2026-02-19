@@ -11,19 +11,25 @@ class GameAnalysis:
 
     def __init__(self, json_path: Path):
         self.json_path = json_path
+        # This should equal to the CONTEST_NAME option (-u flag in capture.py)
         self.experiment_name = json_path.parent.parent.name.removeprefix('contest_')
         __filetime = json_path.stat().st_ctime
+        # This returns when the time and date when the experiment was run. See dataframes for duration
         self.experiment_time = time.ctime(__filetime)
 
         with open(self.json_path, 'r') as file:
             json_object = json.load(file)
             self.json_object = json_object
 
+        # helper variables to wrangle the JSON object
         team_stats = json_object['teams_stats']
         keys = list(team_stats.keys())
         team1_stats = team_stats[keys[0]]
         team2_stats = team_stats[keys[1]]
 
+        # dataframe that roughly corresponds to the raw 'teamstats' field in the JSON object
+        # Note: index is currently the team name. An extra 'team' column with team-name as value has been added for convenience
+        # team-name should correspond to the --red/blue-name flags in capture.py
         self.team_stats_dataframe = pd.DataFrame(
             {keys[0]: team1_stats,
              keys[1]: team2_stats}
@@ -37,6 +43,9 @@ class GameAnalysis:
             6: 'sum_score'
         }).assign(team = [keys[0], keys[1]])
 
+        # dataframe that roughly corresponds to the "games" field in the JSON object
+        # Note: the 'score' in the JSON object slightly differs from the summary you get from the .log file!
+            # currently only positive scores are shown in (conversely, log summary also shows negative score values)
         games_data = json_object['games']
         self.games_dataframe = pd.DataFrame(games_data).rename(columns={
                 0: 'team_1',
