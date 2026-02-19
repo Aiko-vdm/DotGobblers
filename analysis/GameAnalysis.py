@@ -20,8 +20,9 @@ class GameAnalysis:
             self.json_object = json_object
 
         team_stats = json_object['teams_stats']
-        blue_stats = team_stats['Blue']
-        red_stats = team_stats['Red']
+        keys = list(team_stats.keys())
+        blue_stats = team_stats[keys[0]]
+        red_stats = team_stats[keys[1]]
 
         self.team_stats_dataframe = pd.DataFrame(
             {'blue_stats': blue_stats,
