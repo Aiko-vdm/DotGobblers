@@ -29,4 +29,12 @@ class GameAnalysis:
         ).T
 
         games_data = json_object['games']
-        self.games_dataframe = pd.DataFrame(games_data)
+        self.games_dataframe = pd.DataFrame(games_data).rename(columns={
+                0: 'team_1',
+                1: 'team_2',
+                2: 'layout',
+                3: 'score',
+                4: 'winner',
+                5: 'time_taken',
+                6: 'match_number'
+            })
