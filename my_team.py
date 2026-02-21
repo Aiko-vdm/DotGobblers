@@ -97,7 +97,7 @@ class ReflexCaptureAgent(CaptureAgent):
             return best_action
 
         return random.choice(best_actions)
-
+ 
     def get_successor(self, game_state, action):
         """
         Finds the next successor which is a grid position (location tuple).
@@ -146,18 +146,27 @@ class OffensiveReflexAgent(ReflexCaptureAgent):
         features = util.Counter()
         successor = self.get_successor(game_state, action)
         food_list = self.get_food(successor).as_list()
+
+        state = successor.get_agent_state(self.index)
+        my_pos = state.get_position()
+
         features['successor_score'] = -len(food_list)  # self.get_score(successor)
 
         # Compute distance to the nearest food
 
         if len(food_list) > 0:  # This should always be True,  but better safe than sorry
-            my_pos = successor.get_agent_state(self.index).get_position()
             min_distance = min([self.get_maze_distance(my_pos, food) for food in food_list])
             features['distance_to_food'] = min_distance
+
+        carrying = state.num_carrying
+        distance_to_home = self.get_maze_distance(my_pos, self.start)
+        features['return_home'] = carrying * distance_to_home # Mss hier nog een factor bij die minder maakt wnr grote cluster food + wel of niet in danger
+        
+        if action == Directions.STOP: features['stop'] = 1
         return features
 
     def get_weights(self, game_state, action):
-        return {'successor_score': 100, 'distance_to_food': -1}
+        return {'successor_score': 100, 'distance_to_food': -1, 'return_home': -1, 'stop': -100}
 
 
 class DefensiveReflexAgent(ReflexCaptureAgent):
