@@ -141,32 +141,52 @@ class OffensiveReflexAgent(ReflexCaptureAgent):
   we give you to get an idea of what an offensive agent might look like,
   but it is by no means the best or only way to build an offensive agent.
   """
+    def compute_clusters(self, food_list, radius):
+        clusters = [] 
 
+        for food in food_list:
+            count = 0
+            for rest_food in food_list:
+                if self.get_maze_distance(food, rest_food) <= radius:
+                    count += 1
+            clusters.append((food, count))
+        return clusters
+    
     def get_features(self, game_state, action):
         features = util.Counter()
         successor = self.get_successor(game_state, action)
         food_list = self.get_food(successor).as_list()
+
+        radius = 2 # beste radius??
+        clusters = self.compute_clusters(food_list, radius)
+
+        best_food = None
+        best_cluster_size = 0
+
+        for food, size in clusters:
+            if size > best_cluster_size:
+                best_cluster_size = size
+                best_food = food
 
         state = successor.get_agent_state(self.index)
         my_pos = state.get_position()
 
         features['successor_score'] = -len(food_list)  # self.get_score(successor)
 
-        # Compute distance to the nearest food
-
-        if len(food_list) > 0:  # This should always be True,  but better safe than sorry
-            min_distance = min([self.get_maze_distance(my_pos, food) for food in food_list])
-            features['distance_to_food'] = min_distance
+        if best_food is not None:
+            distance = self.get_maze_distance(my_pos, best_food)
+            features['distance_to_cluster'] = distance
+            features['cluster_size'] = best_cluster_size
 
         carrying = state.num_carrying
         distance_to_home = self.get_maze_distance(my_pos, self.start)
-        features['return_home'] = carrying * distance_to_home # Mss hier nog een factor bij die minder maakt wnr grote cluster food + wel of niet in danger
+        features['return_home'] = carrying * distance_to_home 
         
         if action == Directions.STOP: features['stop'] = 1
         return features
 
     def get_weights(self, game_state, action):
-        return {'successor_score': 100, 'distance_to_food': -1, 'return_home': -1, 'stop': -100}
+        return {'successor_score': 100, 'distance_to_cluster': -1, 'cluster_size': 5, 'return_home': -1, 'stop': -100}
 
 
 class DefensiveReflexAgent(ReflexCaptureAgent):
