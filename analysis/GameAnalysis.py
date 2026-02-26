@@ -2,6 +2,8 @@ from pathlib import Path
 import pandas as pd
 import json
 import time
+import seaborn as sns
+import numpy as np
 
 
 class GameAnalysis:
@@ -59,3 +61,23 @@ class GameAnalysis:
                 5: 'time_taken',
                 6: 'match_number'
             })
+
+
+    def generate_winplot(self):
+        reshaped_df = self.team_stats_dataframe[['team', 'wins', 'draws']].melt(id_vars=['team'], var_name='outcome', value_name='count')
+
+        # make a "draws" team as this score is the same for both teams and could be visualized only once
+        reshaped_df['team'] = np.where(reshaped_df['outcome'] == 'draws', 'draws', reshaped_df['team'])
+
+        # omit final row as there are two draws teams
+        reshaped_df.head(len(reshaped_df) - 1)
+
+        plot = (sns.barplot(
+            data=reshaped_df,
+            x='team',
+            y='count',
+            hue='team',
+            palette='muted')
+            .set(title=f"{self.experiment_name}".replace("VS", " VS ")))
+
+        return plot
