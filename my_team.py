@@ -33,7 +33,7 @@ from util import nearest_point
 #################
 
 def create_team(first_index, second_index, is_red,
-                first='OffensiveReflexAgent', second='DefensiveReflexAgent', num_training=0):
+                first='MinimaxOffensiveAgent', second='DefensiveReflexAgent', num_training=0):
     """
     This function should return a list of two agents that will form the
     team, initialized using firstIndex and secondIndex as their agent
@@ -224,3 +224,151 @@ class DefensiveReflexAgent(ReflexCaptureAgent):
 
     def get_weights(self, game_state, action):
         return {'num_invaders': -1000, 'on_defense': 100, 'invader_distance': -10, 'stop': -100, 'reverse': -2}
+
+###########
+# MiniMax #
+###########
+
+class MiniMaxAgent(CaptureAgent):
+
+    def register_initial_state(self, game_state):
+        self.start = game_state.get_agent_position(self.index)
+        CaptureAgent.register_initial_state(self, game_state)
+        self.depth = 2
+
+    def choose_action(self, game_state):
+        """
+        Returns the minimax action 
+        """
+        # Chooses the best action by recursively searching for the best state_value that a legal action can provide
+        # initial values:
+        best_action = None
+        best_value = float('-inf')
+        alpha = float('-inf') # initial best value for max so far on path to root
+        beta = float('inf') # initial best value for min so far on path to root
+        legal_actions = game_state.get_legal_actions(self.index)  # Get legal actions 
+
+        for action in legal_actions:
+            successor = game_state.generate_successor(self.index, action)
+            next_agent = (self.index + 1) % game_state.get_num_agents()
+            state_value = self.__value(successor, next_agent, depth=self.depth, alpha=alpha, beta=beta)  # Start with the first ghost
+            # update the best value with its associated action when a better value is found
+            if state_value > best_value:
+                best_value = state_value
+                best_action = action
+
+            # state value is outside of bounds, so the other actions (node children) should not be visited
+            if state_value > beta:
+                return best_action
+            alpha = max(alpha, best_value)
+
+        return best_action
+    
+    def __value(self, state, agent_index: int, depth: int, alpha, beta):
+        """
+        Dispatcher function that retrieves the achievable state value until a terminal state or depth limit is reached
+        Deploys __max_value when our team's turn, and __min_value when opponent's turn.
+        Method is private and should only be called in the main loop from the get_action method
+        """
+        if depth == 0 or state.is_over():
+            return self.evaluate(state)
+        agent_state = state.get_agent_state(agent_index)
+        if agent_state.configuration is None:
+            return self.evaluate(state)
+        # our team's turn, so use max
+        if agent_index == self.index:
+            return self.__max_value(state, agent_index, depth, alpha, beta)
+        elif agent_index in self.get_team(state):
+            return self.__max_value(state, agent_index, depth, alpha, beta)
+        # opponent's turn, so use min. Logic to decrement depth is implemented in the min function
+        else:
+            return self.__min_value(state, agent_index, depth, alpha, beta)
+        
+    def __max_value(self, state, agent_index: int, depth: int, alpha, beta):
+        """
+        Retrieves the max state value until a terminal state or reached depth limit
+        Method is private and should only be called in the main loop from the __value method
+        """
+        state_value = float('-inf')
+        legal_actions = state.get_legal_actions(agent_index)
+        number_of_agents = state.get_num_agents()
+
+        for action in legal_actions:
+            successor = state.generate_successor(agent_index, action)
+            next_agent_index = (agent_index + 1) % number_of_agents #modulo to cycle through the agent indexes
+            next_depth = depth - 1 if agent_index == number_of_agents - 1 else depth
+            state_value = max(state_value, self.__value(successor, next_agent_index, next_depth, alpha, beta))
+
+            # state value is outside of bounds, so the other actions (node children) should not be visited
+            if state_value > beta:
+                return state_value
+            alpha = max(alpha, state_value)
+        return state_value
+
+    def __min_value(self, state, agent_index: int, depth: int, alpha, beta):
+        """
+        Retrieves the achievable min state value until a terminal state or depth limit is reached
+        Method is private and should only be called in the main loop from the __value method
+        """
+        state_value = float('inf')
+        legal_actions = state.get_legal_actions(agent_index)
+        number_of_agents = state.get_num_agents()
+
+        for action in legal_actions:
+            successor = state.generate_successor(agent_index, action)
+            next_agent_index = (agent_index + 1) % number_of_agents #modulo to cycle through the agent indexes
+            next_depth = depth - 1 if agent_index == number_of_agents - 1 else depth  # stop decrementing the depth at the last min opponent.
+            state_value = min(state_value, self.__value(successor, next_agent_index, next_depth, alpha, beta))
+
+            # state value is outside of bounds, so the other actions (node children) should not be visited
+            if state_value < alpha:
+                return state_value
+            beta = min(beta, state_value)
+
+        return state_value
+    
+    def evaluate(self, game_state):
+        raise NotImplementedError
+    
+class MinimaxOffensiveAgent(MiniMaxAgent):
+    def evaluate(self, game_state):
+        features = util.Counter()
+        food_list = self.get_food(game_state).as_list()
+
+        radius = 2 # beste radius??
+        clusters = []
+        for food in food_list:
+            count = 0
+            for rest_food in food_list:
+                if self.get_maze_distance(food, rest_food) <= radius:
+                    count += 1
+            clusters.append((food, count))
+    
+        best_food = None
+        best_cluster_size = 0
+
+        for food, size in clusters:
+            if size > best_cluster_size:
+                best_cluster_size = size
+                best_food = food
+
+        state = game_state.get_agent_state(self.index)
+        my_pos = state.get_position()
+        if my_pos is None:
+            return 0
+
+        features['successor_score'] = -len(food_list)  # self.get_score(successor)
+
+        if best_food is not None:
+            distance = self.get_maze_distance(my_pos, best_food)
+            features['distance_to_cluster'] = distance
+            features['cluster_size'] = best_cluster_size
+
+        carrying = state.num_carrying
+        distance_to_home = self.get_maze_distance(my_pos, self.start)
+        features['return_home'] = carrying * distance_to_home 
+        
+        weights = {'successor_score': 100, 'distance_to_cluster': -1, 'cluster_size': 5, 'return_home': -1}
+
+        return features * weights
+        
