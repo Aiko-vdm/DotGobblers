@@ -218,4 +218,4 @@ class DefensiveReflexAgent(ReflexCaptureAgent):
         return features
 
     def get_weights(self, game_state, action):
-        return {'num_invaders': -1000, 'on_defense': 100, 'invader_distance': -10, 'stop': -100, 'reverse': -2}
+        return {'num_invaders': -1000, 'on_defense': 100, 'invader_distance': -10, 'stop': -100, 'reverse': -2, 'distance_to_last_eaten_food': -10}
