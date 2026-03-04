@@ -167,9 +167,29 @@ class DefensiveReflexAgent(ReflexCaptureAgent):
     could be like.  It is not the best or only way to make
     such an agent.
     """
+    def register_initial_state(self, game_state):
+        super().register_initial_state(game_state)
+        self.previous_food = self.get_food_you_are_defending(game_state).as_list()
+        self.last_eaten_food = None
 
     def get_features(self, game_state, action):
         features = util.Counter()
+        current_food = self.get_food_you_are_defending(game_state).as_list()
+        eaten = set(self.previous_food) - set(current_food)
+
+        if eaten: 
+            pos = game_state.get_agent_state(self.index).get_position()
+            min_dist = float('inf')
+            closest = None
+            for food in eaten:
+                dist = self.get_maze_distance(pos, food)
+                if dist < min_dist: 
+                    min_dist = dist
+                    closest = food
+            self.last_eaten_food = closest
+            
+        self.previous_food = current_food
+
         successor = self.get_successor(game_state, action)
 
         my_state = successor.get_agent_state(self.index)
@@ -190,6 +210,10 @@ class DefensiveReflexAgent(ReflexCaptureAgent):
         if action == Directions.STOP: features['stop'] = 1
         rev = Directions.REVERSE[game_state.get_agent_state(self.index).configuration.direction]
         if action == rev: features['reverse'] = 1
+
+        if len(invaders) == 0 and self.last_eaten_food is not None:
+            dist = self.get_maze_distance(my_pos, self.last_eaten_food)
+            features['distance_to_last_eaten_food'] = dist
 
         return features
 
