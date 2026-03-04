@@ -371,4 +371,25 @@ class MinimaxOffensiveAgent(MiniMaxAgent):
         weights = {'successor_score': 100, 'distance_to_cluster': -1, 'cluster_size': 5, 'return_home': -1}
 
         return features * weights
-        
+    
+class MinimaxDefensiveAgent(MiniMaxAgent):
+    def evaluate(self, game_state):
+        features = util.Counter()
+
+        my_state = game_state.get_agent_state(self.index)
+        my_pos = my_state.get_position()
+
+        # Computes whether we're on defense (1) or offense (0)
+        features['on_defense'] = 1
+        if my_state.is_pacman: features['on_defense'] = 0
+
+        # Computes distance to invaders we can see
+        enemies = [game_state.get_agent_state(i) for i in self.get_opponents(game_state)]
+        invaders = [a for a in enemies if a.is_pacman and a.get_position() is not None]
+        features['num_invaders'] = len(invaders)
+        if len(invaders) > 0:
+            dists = [self.get_maze_distance(my_pos, a.get_position()) for a in invaders]
+            features['invader_distance'] = min(dists)
+
+        weights = {'num_invaders': -1000, 'on_defense': 100, 'invader_distance': -10}
+        return features * weights
