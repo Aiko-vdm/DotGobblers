@@ -270,7 +270,7 @@ class MiniMaxAgent(CaptureAgent):
         best_value = float('-inf')
         alpha = float('-inf') # initial best value for max so far on path to root
         beta = float('inf') # initial best value for min so far on path to root
-        legal_actions = game_state.get_legal_actions(self.index)  # Get legal actions 
+        legal_actions = [action for action in game_state.get_legal_actions(self.index) if action !=Directions.STOP]  # Get legal actions 
 
         for action in legal_actions:
             successor = game_state.generate_successor(self.index, action)
@@ -314,7 +314,7 @@ class MiniMaxAgent(CaptureAgent):
         Method is private and should only be called in the main loop from the __value method
         """
         state_value = float('-inf')
-        legal_actions = state.get_legal_actions(agent_index)
+        legal_actions = [action for action in state.get_legal_actions(agent_index) if action !=Directions.STOP]
         number_of_agents = state.get_num_agents()
 
         for action in legal_actions:
@@ -335,7 +335,7 @@ class MiniMaxAgent(CaptureAgent):
         Method is private and should only be called in the main loop from the __value method
         """
         state_value = float('inf')
-        legal_actions = state.get_legal_actions(agent_index)
+        legal_actions = [action for action in state.get_legal_actions(agent_index) if action !=Directions.STOP]
         number_of_agents = state.get_num_agents()
 
         for action in legal_actions:
