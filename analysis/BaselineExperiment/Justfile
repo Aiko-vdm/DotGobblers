@@ -1,5 +1,5 @@
 # runs all baseline team combinations
-[group("baseline experiments")]
+[group("baseline experiments"),parallel]
 run_all_baseline: run_base_balancedVSoffensive run_base_balancedVSdefensive run_base_balancedVSbalanced run_base_offensiveVSdefensive run_base_offensiveVSoffensive run_base_defensiveVSdefensive
 #Baseline experiments:
 # balanced vs offensive
