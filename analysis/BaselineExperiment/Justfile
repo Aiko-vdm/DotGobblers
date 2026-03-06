@@ -1,0 +1,66 @@
+# runs all baseline team combinations
+[group("baseline experiments")]
+run_all_baseline: run_base_balancedVSoffensive run_base_balancedVSdefensive run_base_balancedVSbalanced run_base_offensiveVSdefensive run_base_offensiveVSoffensive run_base_defensiveVSdefensive
+#Baseline experiments:
+# balanced vs offensive
+# balanced vs defensive
+# balanced vs balanced
+# offensive vs offensive
+# offensive vs defensive
+# defensive vs defensive
+
+# baseline agents: Blue = balanced VS Red = offensive
+[group("baseline experiments")]
+run_base_balancedVSoffensive:
+    {{python_interpreter}} {{default_exp_args}} \
+    -u balancedVSoffensive \
+    -r {{research_teams_dir}}offensive_team.py \
+    --red-name RedOffensive \
+    --blue-name BlueBalanced
+
+# baseline agents: Blue = balanced VS Red = defensive
+[group("baseline experiments")]
+run_base_balancedVSdefensive:
+    {{python_interpreter}} {{default_exp_args}} \
+    -u balancedVSdefensive \
+    -r {{research_teams_dir}}defensive_team.py \
+    --red-name RedDefensive \
+    --blue-name BlueBalanced
+
+# baseline agents: Blue = balanced VS Red = balanced
+[group("baseline experiments")]
+run_base_balancedVSbalanced:
+    {{python_interpreter}} {{default_exp_args}} \
+    -u balancedVSbalanced \
+    --red-name RedBalanced \
+    --blue-name BlueBalanced
+
+# baseline agents: Blue = offensive VS Red = offensive
+[group("baseline experiments")]
+run_base_offensiveVSoffensive:
+    {{python_interpreter}} {{default_exp_args}} \
+    -u offensiveVSoffensive \
+    -r {{research_teams_dir}}offensive_team.py \
+    --red-name RedOffensive \
+    -b {{research_teams_dir}}offensive_team.py \
+    --blue-name BlueOffensive
+
+# baseline agents: Blue = offensive VS Red = defensive
+[group("baseline experiments")]
+run_base_offensiveVSdefensive:
+    {{python_interpreter}} {{default_exp_args}} \
+    -u offensiveVSdefensive \
+    -r {{research_teams_dir}}defensive_team.py \
+    --red-name RedDefensive \
+    -b {{research_teams_dir}}offensive_team.py \
+    --blue-name BlueOffensive
+
+# baseline agents: Blue = defensive VS Red = defensive
+[group("baseline experiments")]
+run_base_defensiveVSdefensive:
+    {{python_interpreter}} {{default_exp_args}} \
+    -u defensiveVSdefensive \
+    -r {{research_teams_dir}}defensive_team.py \
+    --red-name RedDefensive \
+    -b {{research_teams_dir}}defensive_team.py \
+    --blue-name BlueDefensive

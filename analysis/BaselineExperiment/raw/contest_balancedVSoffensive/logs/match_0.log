@@ -1,0 +1,306 @@
+
+Red team agents/DotGobblers/analysis/ResearchTeams/offensive_team.py with {}:
+Loading agent team: /Users/eliseygretchko/Repositories/unif/capture-the-flag/agents/DotGobblers/analysis/ResearchTeams/offensive_team.py
+	Arguments: {}
+
+Blue team /Users/eliseygretchko/Repositories/unif/capture-the-flag/baseline_team with {}:
+Loading agent team: /Users/eliseygretchko/Repositories/unif/capture-the-flag/baseline_team.py
+	Arguments: {}
+2
+2
+0
+1
+1
+1
+1
+2
+1
+3
+1
+0
+0
+2
+2
+0
+0
+2
+3
+1
+1
+1
+2
+1
+3
+1
+0
+1
+3
+2
+0
+1
+1
+3
+1
+1
+1
+1
+0
+1
+0
+1
+1
+1
+2
+0
+3
+2
+1
+1
+1
+1
+1
+3
+1
+1
+2
+1
+1
+1
+2
+1
+2
+3
+1
+1
+1
+1
+2
+2
+{'display': <text_display.NullGraphics object at 0x10188b620>, 'red_team_name': 'RedOffensive', 'blue_team_name': 'BlueBalanced', 'agents': [<offensive_team.OffensiveReflexAgent object at 0x10188be00>, <baseline_team.OffensiveReflexAgent object at 0x1019382f0>, <offensive_team.OffensiveReflexAgent object at 0x101914550>, <baseline_team.DefensiveReflexAgent object at 0x101938440>], 'layouts': [<layout.Layout object at 0x1019386e0>, <layout.Layout object at 0x101915a90>, <layout.Layout object at 0x101916210>, <layout.Layout object at 0x1018a35c0>, <layout.Layout object at 0x1018a36f0>, <layout.Layout object at 0x1018d1370>, <layout.Layout object at 0x101929480>, <layout.Layout object at 0x1019296a0>, <layout.Layout object at 0x1018d5b50>, <layout.Layout object at 0x1018d6450>, <layout.Layout object at 0x1018b74d0>, <layout.Layout object at 0x1018b75c0>, <layout.Layout object at 0x1018b20b0>, <layout.Layout object at 0x1018b2190>, <layout.Layout object at 0x1018a6c30>, <layout.Layout object at 0x101a46510>, <layout.Layout object at 0x101a519d0>, <layout.Layout object at 0x1019355a0>, <layout.Layout object at 0x101935650>, <layout.Layout object at 0x101935700>, <layout.Layout object at 0x1019357b0>, <layout.Layout object at 0x101935860>, <layout.Layout object at 0x101935910>, <layout.Layout object at 0x1019359c0>, <layout.Layout object at 0x1018c1a70>, <layout.Layout object at 0x1019345d0>, <layout.Layout object at 0x101935a70>, <layout.Layout object at 0x101935b20>, <layout.Layout object at 0x101935bd0>, <layout.Layout object at 0x101935c80>, <layout.Layout object at 0x101935d30>, <layout.Layout object at 0x101935de0>, <layout.Layout object at 0x101935e90>, <layout.Layout object at 0x101935f40>, <layout.Layout object at 0x101935ff0>, <layout.Layout object at 0x1019360a0>, <layout.Layout object at 0x101936150>, <layout.Layout object at 0x101936200>, <layout.Layout object at 0x1019362b0>, <layout.Layout object at 0x101936360>, <layout.Layout object at 0x101936410>, <layout.Layout object at 0x1019364c0>, <layout.Layout object at 0x101936570>, <layout.Layout object at 0x101936620>, <layout.Layout object at 0x1019366d0>, <layout.Layout object at 0x101936780>, <layout.Layout object at 0x101936830>, <layout.Layout object at 0x1019368e0>, <layout.Layout object at 0x101936990>, <layout.Layout object at 0x101936a40>, <layout.Layout object at 0x101936af0>, <layout.Layout object at 0x101936ba0>, <layout.Layout object at 0x101936c50>, <layout.Layout object at 0x101936d00>, <layout.Layout object at 0x101936db0>, <layout.Layout object at 0x101936e60>, <layout.Layout object at 0x101936f10>, <layout.Layout object at 0x101936fc0>, <layout.Layout object at 0x101937070>, <layout.Layout object at 0x101937120>, <layout.Layout object at 0x1019371d0>, <layout.Layout object at 0x101937280>, <layout.Layout object at 0x101937330>, <layout.Layout object at 0x1019373e0>, <layout.Layout object at 0x101937490>, <layout.Layout object at 0x101937540>, <layout.Layout object at 0x1019375f0>, <layout.Layout object at 0x1019376a0>, <layout.Layout object at 0x101937750>, <layout.Layout object at 0x101937800>], 'length': 1200, 'num_games': 70, 'num_training': 0, 'record': True, 'catch_exceptions': True, 'delay_step': 0.0, 'match_id': 0, 'contest_name': 'balancedVSoffensive'}
+Blue team starts
+The Blue team has returned at least 28.0 of the opponents' dots.
+recorded
+Red team starts
+The Red team has returned at least 28.0 of the opponents' dots.
+recorded
+Blue team starts
+Time is up.
+Tie game!
+recorded
+Blue team starts
+The Red team has returned at least 28.0 of the opponents' dots.
+recorded
+Blue team starts
+The Blue team has returned at least 28.0 of the opponents' dots.
+recorded
+Blue team starts
+The Red team has returned at least 28.0 of the opponents' dots.
+recorded
+Blue team starts
+Time is up.
+Tie game!
+recorded
+Blue team starts
+The Red team has returned at least 28.0 of the opponents' dots.
+recorded
+Red team starts
+The Blue team has returned at least 28.0 of the opponents' dots.
+recorded
+Blue team starts
+The Blue team has returned at least 28.0 of the opponents' dots.
+recorded
+Blue team starts
+The Blue team has returned at least 28.0 of the opponents' dots.
+recorded
+Blue team starts
+Time is up.
+The Red team wins by 1 points.
+recorded
+Red team starts
+Time is up.
+Tie game!
+recorded
+Red team starts
+The Red team has returned at least 28.0 of the opponents' dots.
+recorded
+Red team starts
+The Blue team has returned at least 28.0 of the opponents' dots.
+recorded
+Red team starts
+The Blue team has returned at least 28.0 of the opponents' dots.
+recorded
+Red team starts
+The Blue team has returned at least 28.0 of the opponents' dots.
+recorded
+Blue team starts
+The Blue team has returned at least 28.0 of the opponents' dots.
+recorded
+Blue team starts
+The Red team has returned at least 28.0 of the opponents' dots.
+recorded
+Red team starts
+The Red team has returned at least 28.0 of the opponents' dots.
+recorded
+Red team starts
+The Blue team has returned at least 28.0 of the opponents' dots.
+recorded
+Blue team starts
+The Blue team has returned at least 28.0 of the opponents' dots.
+recorded
+Blue team starts
+The Red team has returned at least 28.0 of the opponents' dots.
+recorded
+Blue team starts
+The Blue team has returned at least 28.0 of the opponents' dots.
+recorded
+Blue team starts
+The Blue team has returned at least 28.0 of the opponents' dots.
+recorded
+Blue team starts
+The Blue team has returned at least 28.0 of the opponents' dots.
+recorded
+Red team starts
+The Blue team has returned at least 28.0 of the opponents' dots.
+recorded
+Red team starts
+The Red team has returned at least 28.0 of the opponents' dots.
+recorded
+Red team starts
+The Blue team has returned at least 28.0 of the opponents' dots.
+recorded
+Blue team starts
+The Blue team has returned at least 28.0 of the opponents' dots.
+recorded
+Red team starts
+The Blue team has returned at least 28.0 of the opponents' dots.
+recorded
+Red team starts
+The Blue team has returned at least 28.0 of the opponents' dots.
+recorded
+Blue team starts
+The Blue team has returned at least 28.0 of the opponents' dots.
+recorded
+Blue team starts
+The Red team has returned at least 28.0 of the opponents' dots.
+recorded
+Blue team starts
+The Red team has returned at least 28.0 of the opponents' dots.
+recorded
+Red team starts
+The Blue team has returned at least 28.0 of the opponents' dots.
+recorded
+Red team starts
+The Blue team has returned at least 28.0 of the opponents' dots.
+recorded
+Blue team starts
+The Red team has returned at least 28.0 of the opponents' dots.
+recorded
+Red team starts
+Time is up.
+Tie game!
+recorded
+Red team starts
+The Red team has returned at least 28.0 of the opponents' dots.
+recorded
+Red team starts
+The Blue team has returned at least 28.0 of the opponents' dots.
+recorded
+Red team starts
+The Blue team has returned at least 28.0 of the opponents' dots.
+recorded
+Blue team starts
+The Blue team has returned at least 28.0 of the opponents' dots.
+recorded
+Red team starts
+The Blue team has returned at least 28.0 of the opponents' dots.
+recorded
+Red team starts
+The Blue team has returned at least 28.0 of the opponents' dots.
+recorded
+Blue team starts
+The Red team has returned at least 28.0 of the opponents' dots.
+recorded
+Blue team starts
+Time is up.
+Tie game!
+recorded
+Red team starts
+The Blue team has returned at least 28.0 of the opponents' dots.
+recorded
+Blue team starts
+Time is up.
+Tie game!
+recorded
+Blue team starts
+Time is up.
+Tie game!
+recorded
+Red team starts
+The Blue team has returned at least 28.0 of the opponents' dots.
+recorded
+Red team starts
+Time is up.
+Tie game!
+recorded
+Red team starts
+The Blue team has returned at least 28.0 of the opponents' dots.
+recorded
+Blue team starts
+Time is up.
+Tie game!
+recorded
+Red team starts
+The Red team has returned at least 28.0 of the opponents' dots.
+recorded
+Blue team starts
+The Blue team has returned at least 28.0 of the opponents' dots.
+recorded
+Red team starts
+The Blue team has returned at least 28.0 of the opponents' dots.
+recorded
+Blue team starts
+The Blue team has returned at least 28.0 of the opponents' dots.
+recorded
+Blue team starts
+The Blue team has returned at least 28.0 of the opponents' dots.
+recorded
+Red team starts
+The Red team has returned at least 28.0 of the opponents' dots.
+recorded
+Red team starts
+The Blue team has returned at least 28.0 of the opponents' dots.
+recorded
+Red team starts
+The Red team has returned at least 28.0 of the opponents' dots.
+recorded
+Red team starts
+The Blue team has returned at least 28.0 of the opponents' dots.
+recorded
+Blue team starts
+The Blue team has returned at least 28.0 of the opponents' dots.
+recorded
+Blue team starts
+The Red team has returned at least 28.0 of the opponents' dots.
+recorded
+Blue team starts
+The Red team has returned at least 28.0 of the opponents' dots.
+recorded
+Red team starts
+The Blue team has returned at least 28.0 of the opponents' dots.
+recorded
+Red team starts
+The Blue team has returned at least 28.0 of the opponents' dots.
+recorded
+Blue team starts
+The Red team has returned at least 28.0 of the opponents' dots.
+recorded
+Red team starts
+The Red team has returned at least 28.0 of the opponents' dots.
+recorded
+Average Score: -7.328571428571428
+Scores:        -28, 28, 0, 28, -28, 29, 0, 28, -28, -28, -25, 1, 0, 28, -28, -29, -28, -28, 28, 28, -28, -28, 28, -25, -28, -28, -28, 28, -30, -28, -28, -28, -28, 28, 5, -28, -28, 28, 0, 28, -28, -28, -28, -28, -28, 28, 0, -27, 0, 0, -28, 0, -28, 0, 29, -28, -28, -28, -21, 28, -28, 28, -28, -28, 28, 28, -28, -28, 28, 28
+Red Win Rate:  22/70 (0.31)
+Blue Win Rate: 39/70 (0.56)
+Record:        Blue, Red, Tie, Red, Blue, Red, Tie, Red, Blue, Blue, Blue, Red, Tie, Red, Blue, Blue, Blue, Blue, Red, Red, Blue, Blue, Red, Blue, Blue, Blue, Blue, Red, Blue, Blue, Blue, Blue, Blue, Red, Red, Blue, Blue, Red, Tie, Red, Blue, Blue, Blue, Blue, Blue, Red, Tie, Blue, Tie, Tie, Blue, Tie, Blue, Tie, Red, Blue, Blue, Blue, Blue, Red, Blue, Red, Blue, Blue, Red, Red, Blue, Blue, Red, Red
+
+Total Time Game: 37.0

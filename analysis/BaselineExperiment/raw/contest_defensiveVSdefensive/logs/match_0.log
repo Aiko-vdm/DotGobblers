@@ -1,0 +1,366 @@
+
+Red team agents/DotGobblers/analysis/ResearchTeams/defensive_team.py with {}:
+Loading agent team: /Users/eliseygretchko/Repositories/unif/capture-the-flag/agents/DotGobblers/analysis/ResearchTeams/defensive_team.py
+	Arguments: {}
+
+Blue team agents/DotGobblers/analysis/ResearchTeams/defensive_team.py with {}:
+Loading agent team: /Users/eliseygretchko/Repositories/unif/capture-the-flag/agents/DotGobblers/analysis/ResearchTeams/defensive_team.py
+	Arguments: {}
+2
+1
+2
+2
+0
+0
+3
+1
+1
+3
+1
+1
+1
+1
+1
+0
+1
+2
+0
+0
+1
+1
+1
+1
+2
+0
+0
+1
+0
+1
+0
+0
+2
+1
+0
+0
+1
+3
+1
+3
+1
+3
+2
+3
+2
+0
+0
+1
+1
+0
+2
+1
+0
+0
+1
+1
+1
+3
+2
+1
+1
+0
+0
+0
+2
+1
+1
+1
+1
+0
+{'display': <text_display.NullGraphics object at 0x10342b620>, 'red_team_name': 'RedDefensive', 'blue_team_name': 'BlueDefensive', 'agents': [<defensive_team.DefensiveReflexAgent object at 0x10342be00>, <defensive_team.DefensiveReflexAgent object at 0x1034e82f0>, <defensive_team.DefensiveReflexAgent object at 0x1034b8550>, <defensive_team.DefensiveReflexAgent object at 0x1034b8e10>], 'layouts': [<layout.Layout object at 0x1034e8590>, <layout.Layout object at 0x1034b9bd0>, <layout.Layout object at 0x1034ba350>, <layout.Layout object at 0x103443490>, <layout.Layout object at 0x1034435c0>, <layout.Layout object at 0x103471370>, <layout.Layout object at 0x1034c9590>, <layout.Layout object at 0x1034c97b0>, <layout.Layout object at 0x103475850>, <layout.Layout object at 0x103476450>, <layout.Layout object at 0x1034574d0>, <layout.Layout object at 0x1034575c0>, <layout.Layout object at 0x10344e430>, <layout.Layout object at 0x10344e270>, <layout.Layout object at 0x103446c30>, <layout.Layout object at 0x1035f2690>, <layout.Layout object at 0x103601b50>, <layout.Layout object at 0x1034e5700>, <layout.Layout object at 0x1034e57b0>, <layout.Layout object at 0x1034e5860>, <layout.Layout object at 0x1034e5910>, <layout.Layout object at 0x1034e59c0>, <layout.Layout object at 0x1034e5a70>, <layout.Layout object at 0x1034e5b20>, <layout.Layout object at 0x1034ae2b0>, <layout.Layout object at 0x1034ce410>, <layout.Layout object at 0x1034e5bd0>, <layout.Layout object at 0x1034e5c80>, <layout.Layout object at 0x1034e5d30>, <layout.Layout object at 0x1034e5de0>, <layout.Layout object at 0x1034e5e90>, <layout.Layout object at 0x1034e5f40>, <layout.Layout object at 0x1034e5ff0>, <layout.Layout object at 0x1034e60a0>, <layout.Layout object at 0x1034e6150>, <layout.Layout object at 0x1034e6200>, <layout.Layout object at 0x1034e62b0>, <layout.Layout object at 0x1034e6360>, <layout.Layout object at 0x1034e6410>, <layout.Layout object at 0x1034e64c0>, <layout.Layout object at 0x1034e6570>, <layout.Layout object at 0x1034e6620>, <layout.Layout object at 0x1034e66d0>, <layout.Layout object at 0x1034e6780>, <layout.Layout object at 0x1034e6830>, <layout.Layout object at 0x1034e68e0>, <layout.Layout object at 0x1034e6990>, <layout.Layout object at 0x1034e6a40>, <layout.Layout object at 0x1034e6af0>, <layout.Layout object at 0x1034e6ba0>, <layout.Layout object at 0x1034e6c50>, <layout.Layout object at 0x1034e6d00>, <layout.Layout object at 0x1034e6db0>, <layout.Layout object at 0x1034e6e60>, <layout.Layout object at 0x1034e6f10>, <layout.Layout object at 0x1034e6fc0>, <layout.Layout object at 0x1034e7070>, <layout.Layout object at 0x1034e7120>, <layout.Layout object at 0x1034e71d0>, <layout.Layout object at 0x1034e7280>, <layout.Layout object at 0x1034e7330>, <layout.Layout object at 0x1034e73e0>, <layout.Layout object at 0x1034e7490>, <layout.Layout object at 0x1034e7540>, <layout.Layout object at 0x1034e75f0>, <layout.Layout object at 0x1034e76a0>, <layout.Layout object at 0x1034e7750>, <layout.Layout object at 0x1034e7800>, <layout.Layout object at 0x1034e78b0>, <layout.Layout object at 0x1034e7960>], 'length': 1200, 'num_games': 70, 'num_training': 0, 'record': True, 'catch_exceptions': True, 'delay_step': 0.0, 'match_id': 0, 'contest_name': 'defensiveVSdefensive'}
+Red team starts
+Time is up.
+Tie game!
+recorded
+Blue team starts
+Time is up.
+Tie game!
+recorded
+Red team starts
+Time is up.
+Tie game!
+recorded
+Red team starts
+Time is up.
+Tie game!
+recorded
+Blue team starts
+Time is up.
+Tie game!
+recorded
+Blue team starts
+Time is up.
+Tie game!
+recorded
+Red team starts
+Time is up.
+Tie game!
+recorded
+Blue team starts
+Time is up.
+Tie game!
+recorded
+Red team starts
+Time is up.
+Tie game!
+recorded
+Red team starts
+Time is up.
+Tie game!
+recorded
+Blue team starts
+Time is up.
+Tie game!
+recorded
+Red team starts
+Time is up.
+Tie game!
+recorded
+Red team starts
+Time is up.
+Tie game!
+recorded
+Blue team starts
+Time is up.
+Tie game!
+recorded
+Red team starts
+Time is up.
+Tie game!
+recorded
+Red team starts
+Time is up.
+Tie game!
+recorded
+Red team starts
+Time is up.
+Tie game!
+recorded
+Red team starts
+Time is up.
+Tie game!
+recorded
+Red team starts
+Time is up.
+Tie game!
+recorded
+Red team starts
+Time is up.
+Tie game!
+recorded
+Blue team starts
+Time is up.
+Tie game!
+recorded
+Blue team starts
+Time is up.
+Tie game!
+recorded
+Blue team starts
+Time is up.
+Tie game!
+recorded
+Red team starts
+Time is up.
+Tie game!
+recorded
+Blue team starts
+Time is up.
+Tie game!
+recorded
+Blue team starts
+Time is up.
+Tie game!
+recorded
+Red team starts
+Time is up.
+Tie game!
+recorded
+Blue team starts
+Time is up.
+Tie game!
+recorded
+Blue team starts
+Time is up.
+Tie game!
+recorded
+Red team starts
+Time is up.
+Tie game!
+recorded
+Blue team starts
+Time is up.
+Tie game!
+recorded
+Blue team starts
+Time is up.
+Tie game!
+recorded
+Red team starts
+Time is up.
+Tie game!
+recorded
+Red team starts
+Time is up.
+Tie game!
+recorded
+Blue team starts
+Time is up.
+Tie game!
+recorded
+Red team starts
+Time is up.
+Tie game!
+recorded
+Blue team starts
+Time is up.
+Tie game!
+recorded
+Blue team starts
+Time is up.
+Tie game!
+recorded
+Red team starts
+Time is up.
+Tie game!
+recorded
+Red team starts
+Time is up.
+Tie game!
+recorded
+Red team starts
+Time is up.
+Tie game!
+recorded
+Red team starts
+Time is up.
+Tie game!
+recorded
+Blue team starts
+Time is up.
+Tie game!
+recorded
+Blue team starts
+Time is up.
+Tie game!
+recorded
+Blue team starts
+Time is up.
+Tie game!
+recorded
+Red team starts
+Time is up.
+Tie game!
+recorded
+Blue team starts
+Time is up.
+Tie game!
+recorded
+Blue team starts
+Time is up.
+Tie game!
+recorded
+Blue team starts
+Time is up.
+Tie game!
+recorded
+Blue team starts
+Time is up.
+Tie game!
+recorded
+Blue team starts
+Time is up.
+Tie game!
+recorded
+Red team starts
+Time is up.
+Tie game!
+recorded
+Blue team starts
+Time is up.
+Tie game!
+recorded
+Blue team starts
+Time is up.
+Tie game!
+recorded
+Red team starts
+Time is up.
+Tie game!
+recorded
+Red team starts
+Time is up.
+Tie game!
+recorded
+Red team starts
+Time is up.
+Tie game!
+recorded
+Blue team starts
+Time is up.
+Tie game!
+recorded
+Blue team starts
+Time is up.
+Tie game!
+recorded
+Red team starts
+Time is up.
+Tie game!
+recorded
+Red team starts
+Time is up.
+Tie game!
+recorded
+Blue team starts
+Time is up.
+Tie game!
+recorded
+Blue team starts
+Time is up.
+Tie game!
+recorded
+Blue team starts
+Time is up.
+Tie game!
+recorded
+Blue team starts
+Time is up.
+Tie game!
+recorded
+Blue team starts
+Time is up.
+Tie game!
+recorded
+Blue team starts
+Time is up.
+Tie game!
+recorded
+Red team starts
+Time is up.
+Tie game!
+recorded
+Red team starts
+Time is up.
+Tie game!
+recorded
+Blue team starts
+Time is up.
+Tie game!
+recorded
+Average Score: 0.0
+Scores:        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
+Red Win Rate:  0/70 (0.00)
+Blue Win Rate: 0/70 (0.00)
+Record:        Tie, Tie, Tie, Tie, Tie, Tie, Tie, Tie, Tie, Tie, Tie, Tie, Tie, Tie, Tie, Tie, Tie, Tie, Tie, Tie, Tie, Tie, Tie, Tie, Tie, Tie, Tie, Tie, Tie, Tie, Tie, Tie, Tie, Tie, Tie, Tie, Tie, Tie, Tie, Tie, Tie, Tie, Tie, Tie, Tie, Tie, Tie, Tie, Tie, Tie, Tie, Tie, Tie, Tie, Tie, Tie, Tie, Tie, Tie, Tie, Tie, Tie, Tie, Tie, Tie, Tie, Tie, Tie, Tie, Tie
+
+Total Time Game: 39.0
