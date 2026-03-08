@@ -437,8 +437,19 @@ class MinimaxOffensiveAgent(MiniMaxAgent):
         carrying = state.num_carrying
         distance_to_home = self.get_maze_distance(my_pos, self.start)
         features['return_home'] = carrying * distance_to_home 
+
+        if my_pos in self.dead_ends:
+            depth = self.dead_ends[my_pos]
+            enemies = [game_state.get_agent_state(i) for i in self.get_opponents(game_state)]
+            defenders = [a for a in enemies if not a.is_pacman and a.get_position() is not None]
+
+            if defenders:
+                defender_dist = [self.get_maze_distance(my_pos, a.get_position())for a in defenders]
+                closest_defender = min(defender_dist)
+                if closest_defender <= depth*2:
+                    features['dead_end'] = 1
         
-        weights = {'successor_score': 100, 'distance_to_cluster': -1, 'cluster_size': 5, 'return_home': -1}
+        weights = {'successor_score': 100, 'distance_to_cluster': -1, 'cluster_size': 5, 'return_home': -1, 'dead_end': -10}
 
         return features * weights
     
