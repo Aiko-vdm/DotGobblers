@@ -360,7 +360,16 @@ class MinimaxOffensiveAgent(MiniMaxAgent):
         self.walls = game_state.get_walls()
         self.dead_ends = {}
         self.compute_dead_ends()
+        self.pos_history = []
+        self.pos_hist_len = 4
         
+    def choose_action(self, game_state):
+        my_pos = game_state.get_agent_state(self.index).get_position()
+        if my_pos is not None:
+            self.pos_history.append(my_pos)
+            if len(self.pos_history) > self.pos_hist_len: self.pos_history.pop(0)
+        return super().choose_action(game_state)
+    
     def compute_dead_ends(self):
         from util import Queue
         walls = self.walls
@@ -448,8 +457,12 @@ class MinimaxOffensiveAgent(MiniMaxAgent):
                 closest_defender = min(defender_dist)
                 if closest_defender <= depth*2:
                     features['dead_end'] = 1
+
+        if self.pos_history:
+            count = self.pos_history.count(my_pos)
+            features['reverse'] = count
         
-        weights = {'successor_score': 100, 'distance_to_cluster': -1, 'cluster_size': 5, 'return_home': -1, 'dead_end': -10}
+        weights = {'successor_score': 100, 'distance_to_cluster': -1, 'cluster_size': 5, 'return_home': -1, 'dead_end': -100, 'reverse': -5}
 
         return features * weights
     
