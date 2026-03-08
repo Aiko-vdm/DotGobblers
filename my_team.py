@@ -355,6 +355,52 @@ class MiniMaxAgent(CaptureAgent):
         raise NotImplementedError
     
 class MinimaxOffensiveAgent(MiniMaxAgent):
+    def register_initial_state(self, game_state):
+        super().register_initial_state(game_state)
+        self.walls = game_state.get_walls()
+        self.dead_ends = {}
+        self.compute_dead_ends()
+        
+    def compute_dead_ends(self):
+        from util import Queue
+        walls = self.walls
+        neighbours = {}
+        degree = {}
+
+        for x in range(walls.width):
+            for y in range(walls.height):
+                if walls[x][y]:
+                    continue
+                not_wall = (x,y)
+                list_of_neighbours = []
+                for dx, dy in [(1,0), (0,1), (-1, 0), (0,-1)]:
+                    newx,newy = x + dx, y + dy
+
+                    if not walls[newx][newy]:
+                        list_of_neighbours.append((newx,newy))
+                
+                neighbours[not_wall] = list_of_neighbours
+                degree[not_wall] = len(list_of_neighbours)
+        
+        queue = Queue()
+        for not_wall in degree:
+            if degree[not_wall] == 1:
+                queue.push(not_wall)
+                self.dead_ends[not_wall] = 1
+                self.debug_draw(not_wall, color=(1,1,1))
+
+        while not queue.is_empty():
+            not_wall = queue.pop()
+            for x in neighbours[not_wall]:
+                if x not in degree: continue
+                degree[x] -= 1
+
+                if degree[x] == 1 and x not in self.dead_ends:
+                    self.dead_ends[x] = self.dead_ends[not_wall] + 1
+                    queue.push(x)
+                    self.debug_draw(x, color=(1,1,1))
+        
+        
     def evaluate(self, game_state):
         features = util.Counter()
         food_list = self.get_food(game_state).as_list()
