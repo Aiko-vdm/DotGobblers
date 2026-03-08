@@ -436,6 +436,21 @@ class MinimaxOffensiveAgent(MiniMaxAgent):
         if my_pos is None:
             return 0
 
+        enemies = [game_state.get_agent_state(i) for i in self.get_opponents(game_state)]
+        defenders = [a for a in enemies if not a.is_pacman and a.get_position() is not None]
+
+        active_defenders = [a for a in defenders if a.scared_timer == 0]
+        scared_defenders = [a for a in defenders if a.scared_timer > 0]
+        is_chased = False
+        closest_defender_dist = float('inf')
+        if active_defenders: 
+            defender_dists = [self.get_maze_distance(my_pos, a.get_position())for a in active_defenders]
+            closest_defender_dist = min(defender_dists)
+            is_chased = closest_defender_dist <= 5
+
+        if state.is_pacman and closest_defender_dist <= 5:
+            features['ghost_proximity'] = 10 - closest_defender_dist
+
         features['successor_score'] = -len(food_list)  # self.get_score(successor)
 
         if best_food is not None:
@@ -443,26 +458,46 @@ class MinimaxOffensiveAgent(MiniMaxAgent):
             features['distance_to_cluster'] = distance
             features['cluster_size'] = best_cluster_size
 
-        carrying = state.num_carrying
-        distance_to_home = self.get_maze_distance(my_pos, self.start)
-        features['return_home'] = carrying * distance_to_home 
+        if scared_defenders:
+            min_scared_timer = min(a.scared_timer for a in scared_defenders)
+            if min_scared_timer >= 5:
+                features['return_home'] = 0
+                features['dead_end'] = 0
+        else:
+            carrying = state.num_carrying
+            distance_to_home = self.get_maze_distance(my_pos, self.start)
+            if is_chased and carrying >= 4:
+                    features['return_home'] = carrying * distance_to_home 
+            elif is_chased and carrying < 4:
+                capsules = self.get_capsules(game_state)
+                if capsules:
+                    capsule_dists = [self.get_maze_distance(my_pos, capsule) for capsule in capsules]
+                    features['dist_to_capsule'] = min(capsule_dists)
+                else: features['return_home'] = carrying * distance_to_home
+            else: features['return_home'] = carrying * distance_to_home
 
+        if active_defenders:
+            for defender in active_defenders:
+                defender_pos = defender.get_position()
+                if my_pos == defender_pos: features['walk_into_defender'] = 1
         if my_pos in self.dead_ends:
             depth = self.dead_ends[my_pos]
-            enemies = [game_state.get_agent_state(i) for i in self.get_opponents(game_state)]
-            defenders = [a for a in enemies if not a.is_pacman and a.get_position() is not None]
-
-            if defenders:
-                defender_dist = [self.get_maze_distance(my_pos, a.get_position())for a in defenders]
-                closest_defender = min(defender_dist)
-                if closest_defender <= depth*2:
-                    features['dead_end'] = 1
+            if closest_defender_dist <= depth*2:
+                features['dead_end'] = 1
 
         if self.pos_history:
             count = self.pos_history.count(my_pos)
             features['reverse'] = count
         
-        weights = {'successor_score': 100, 'distance_to_cluster': -1, 'cluster_size': 5, 'return_home': -1, 'dead_end': -100, 'reverse': -5}
+        weights = {'successor_score': 1000, 
+                   'distance_to_cluster': -5, 
+                   'cluster_size': 10, 
+                   'return_home': -2, 
+                   'dead_end': -100, 
+                   'reverse': -8, 
+                   'ghost_proximity': -10,
+                   'dist_to_capsule': -8,
+                   'walk_into_defender': -10000}
 
         return features * weights
     
