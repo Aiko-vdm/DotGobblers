@@ -50,8 +50,10 @@ class MiniMaxAgent(CaptureAgent):
         if depth == 0 or state.is_over():
             return self.evaluate(state)
         agent_state = state.get_agent_state(agent_index)
-        if agent_state.configuration is None:
-            return self.evaluate(state)
+        if agent_state.configuration is None: 
+            next_agent = (agent_index + 1) % state.get_num_agents()
+            next_depth = depth - 1 if agent_index == state.get_num_agents() - 1 else depth
+            return self.__value(state, next_agent, next_depth, alpha, beta)
         # our team's turn, so use max
         if agent_index == self.index:
             return self.__max_value(state, agent_index, depth, alpha, beta)
