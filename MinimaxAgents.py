@@ -1,3 +1,5 @@
+from pyexpat import features
+
 import util
 
 from capture_agents import CaptureAgent
@@ -163,11 +165,13 @@ class MinimaxOffensiveAgent(MiniMaxAgent):
                     self.dead_ends[x] = self.dead_ends[not_wall] + 1
                     queue.push(x)
                     self.debug_draw(x, color=(1, 1, 1))
-    #TODO: Code consistentie: get_features code + get_weights code => evaluate
-    #       Dit gaat ook helpen om meerdere feature sets tot over elkaar te vergelijken.
-    #       Je kan in een aparte file verschillende features functies designen en tijdens het testen de specifieke
-    #       oproepen die je nodig hebt.
+    
     def evaluate(self, game_state):
+        features = self.get_features(game_state)
+        weights = self.get_weights()
+
+        return features * weights
+    def get_features(self, game_state):
         features = util.Counter()
         food_list = self.get_food(game_state).as_list()
 
@@ -267,7 +271,19 @@ class MinimaxOffensiveAgent(MiniMaxAgent):
                    'dist_to_capsule': -8,
                    'walk_into_defender': -10000}
 
-        return features * weights
+        return features
+    def get_weights(self):
+        weights = {'successor_score': 1000,
+                   'distance_to_cluster': -5,
+                   'cluster_size': 10,
+                   'return_home': -2,
+                   'dead_end': -100,
+                   'reverse': -8,
+                   'ghost_proximity': -10,
+                   'dist_to_capsule': -8,
+                   'walk_into_defender': -10000}
+        return weights
+
 
 
 class MinimaxDefensiveAgent(MiniMaxAgent):
