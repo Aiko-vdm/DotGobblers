@@ -28,7 +28,7 @@ from agents.DotGobblers.MinimaxAgents import MinimaxOffensiveAgent
 #################
 
 def create_team(first_index, second_index, is_red,
-                first='OffensiveReflexAgent', second='DefensiveReflexAgent', num_training=0):
+                first='MinimaxOffensiveAgent', second='DefensiveReflexAgent', num_training=0):
     """
     This function should return a list of two agents that will form the
     team, initialized using firstIndex and secondIndex as their agent
