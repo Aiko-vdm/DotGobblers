@@ -1,5 +1,3 @@
-from pyexpat import features
-
 import util
 
 from capture_agents import CaptureAgent
