@@ -164,6 +164,9 @@ class MinimaxOffensiveAgent(MiniMaxAgent):
                     queue.push(x)
                     self.debug_draw(x, color=(1, 1, 1))
     #TODO: Code consistentie: get_features code + get_weights code => evaluate
+    #       Dit gaat ook helpen om meerdere feature sets tot over elkaar te vergelijken.
+    #       Je kan in een aparte file verschillende features functies designen en tijdens het testen de specifieke
+    #       oproepen die je nodig hebt.
     def evaluate(self, game_state):
         features = util.Counter()
         food_list = self.get_food(game_state).as_list()
@@ -213,6 +216,7 @@ class MinimaxOffensiveAgent(MiniMaxAgent):
         if state.is_pacman and closest_defender_dist <= 5:
             features['ghost_proximity'] = 10 - closest_defender_dist
 
+        #FIXME: misschien beter om hier "food carying" van te maken en successor score effectief op self.get_score zetten
         features['successor_score'] = -len(food_list)  # self.get_score(successor)
 
         if best_food is not None:
