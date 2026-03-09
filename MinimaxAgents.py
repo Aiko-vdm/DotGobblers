@@ -8,6 +8,7 @@ class MiniMaxAgent(CaptureAgent):
     def register_initial_state(self, game_state):
         self.start = game_state.get_agent_position(self.index)
         CaptureAgent.register_initial_state(self, game_state)
+        # TODO best be initialisatie?
         self.depth = 2
 
     def choose_action(self, game_state):
@@ -110,6 +111,7 @@ class MiniMaxAgent(CaptureAgent):
 class MinimaxOffensiveAgent(MiniMaxAgent):
     def register_initial_state(self, game_state):
         super().register_initial_state(game_state)
+        #TODO: Moet het hier .self zijn?
         self.walls = game_state.get_walls()
         self.dead_ends = {}
         self.compute_dead_ends()
