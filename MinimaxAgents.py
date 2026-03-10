@@ -232,8 +232,9 @@ class MinimaxOffensiveAgent(MiniMaxAgent):
         if state.is_pacman and closest_defender_dist <= 5:
             features['ghost_proximity'] = 10 - closest_defender_dist
 
-        #FIXME: misschien beter om hier "food carying" van te maken en successor score effectief op self.get_score zetten
-        features['successor_score'] = -len(food_list)  # self.get_score(successor)
+        features['score'] = self.get_score(game_state)
+
+        features['uneaten_food'] = len(food_list)  # self.get_score(successor)
 
         if best_food is not None:
             distance = self.get_maze_distance(my_pos, best_food)
@@ -274,21 +275,14 @@ class MinimaxOffensiveAgent(MiniMaxAgent):
             count = self.pos_history.count(my_pos)
             features['reverse'] = count
 
-        weights = {'successor_score': 1000,
-                   'distance_to_cluster': -5,
-                   'cluster_size': 10,
-                   'return_home': -2,
-                   'dead_end': -1000,
-                   'reverse': -8,
-                   'ghost_proximity': -10,
-                   'dist_to_capsule': -80,
-                   'walk_into_defender': -10000}
+
 
         return features
     
     
     def get_weights(self):
-        weights = {'successor_score': 1000,
+        weights = {'score': 1000,
+                   'uneaten_food': -4,
                    'distance_to_cluster': -5,
                    'cluster_size': 10,
                    'return_home': -2,
@@ -298,8 +292,6 @@ class MinimaxOffensiveAgent(MiniMaxAgent):
                    'dist_to_capsule': -80,
                    'walk_into_defender': -10000}
         return weights
-
-
 
 class MinimaxDefensiveAgent(MiniMaxAgent):
 

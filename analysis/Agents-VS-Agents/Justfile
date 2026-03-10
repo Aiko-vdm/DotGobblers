@@ -3,6 +3,7 @@
 ReflexV1 := 'agents/DotGobblers/analysis/ResearchTeams/ReflexV1.py'
 ReflexV2 := 'agents/DotGobblers/analysis/ResearchTeams/ReflexV2.py'
 MinimaxV1 := 'agents/DotGobblers/analysis/ResearchTeams/MinimaxV1.py'
+MinimaxV2 := 'agents/DotGobblers/analysis/ResearchTeams/MinimaxV2.py'
 
 [group("agents-vs-agents")]
 ReflexV1-VS-ReflexV2:
@@ -21,3 +22,12 @@ ReflexV1-VS-MinimaxV1:
     --red-name ReflexV1 \
     -b {{MinimaxV1}} \
     --blue-name MinimaxV1
+
+[group("agents-vs-agents")]
+MinimaxV1-VS-MinimaxV2:
+    {{python_interpreter}} {{default_exp_args}} \
+    -u MinimaxV1-VS-MinimaxV2 \
+    -r {{MinimaxV1}} \
+    --red-name MinimaxV1 \
+    -b {{MinimaxV2}} \
+    --blue-name MinimaxV2
