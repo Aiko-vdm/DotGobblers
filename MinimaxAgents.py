@@ -17,6 +17,18 @@ class MiniMaxAgent(CaptureAgent):
         """
         # Chooses the best action by recursively searching for the best state_value that a legal action can provide
         # initial values:
+        if hasattr(self, 'pos_history') and len(self.pos_history) >= 4:
+            if (self.pos_history[-1] == self.pos_history[-3] and
+                    self.pos_history[-2] == self.pos_history[-4]):
+                legal_actions = game_state.get_legal_actions(self.index)
+                current_dir = game_state.get_agent_state(self.index).configuration.direction
+                non_reverse = [a for a in legal_actions
+                                if a != Directions.REVERSE[current_dir]
+                                and a != Directions.STOP]
+                if non_reverse:
+                    import random
+                    return random.choice(non_reverse)
+                
         best_action = None
         best_value = float('-inf')
         alpha = float('-inf')  # initial best value for max so far on path to root
