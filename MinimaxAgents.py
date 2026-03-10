@@ -234,6 +234,7 @@ class MinimaxOffensiveAgent(MiniMaxAgent):
 
         features['score'] = self.get_score(game_state)
 
+        features['uneaten_food'] = len(food_list)  # self.get_score(successor)
 
         if best_food is not None:
             distance = self.get_maze_distance(my_pos, best_food)
@@ -281,6 +282,7 @@ class MinimaxOffensiveAgent(MiniMaxAgent):
     
     def get_weights(self):
         weights = {'score': 1000,
+                   'uneaten_food': -4,
                    'distance_to_cluster': -5,
                    'cluster_size': 10,
                    'return_home': -2,
