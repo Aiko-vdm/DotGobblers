@@ -20,15 +20,12 @@
 # John DeNero (denero@cs.berkeley.edu) and Dan Klein (klein@cs.berkeley.edu).
 # For more info, see http://inst.eecs.berkeley.edu/~cs188/sp09/pacman.html
 
-
-from game import Directions
 import random
 import util
 
 from capture_agents import CaptureAgent
 from game import Directions
 from util import nearest_point
-
 #################
 # Team creation #
 #################
@@ -344,13 +341,6 @@ class MinimaxOffensiveAgent(MiniMaxAgent):
                    'walk_into_defender': -10000}
         return weights
 
-
-import random
-import util
-
-from capture_agents import CaptureAgent
-from game import Directions
-from util import nearest_point
 
 class ReflexCaptureAgent(CaptureAgent):
     """
