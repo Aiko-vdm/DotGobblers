@@ -438,17 +438,23 @@ class DefensiveReflexAgent(ReflexCaptureAgent):
         agenda = util.Queue()
         closed = util.Counter()
         agenda.push(game_state)  # we push the starting state
-        bottlenecks = self.bottlenecks
-
 
 
         opent_index = self.get_opponents(game_state)[0]
         start_position = self.start
-        end_position = game_state.get_agent_position(opent_index)
+        #end_position = game_state.get_agent_position(opent_index)
+
+        # end position = reach the middle of the map
+        end_positions = [(16,y) for y in range(1,17)]
         while not agenda.is_empty():
             current_state = agenda.pop()
-            if current_state.get_agent_position(self.index) == end_position:
-                self.bottlenecks = closed.sorted_keys()[:10]
+            #if current_state.get_agent_position(self.index) == end_position:
+            if current_state.get_agent_position(self.index) in end_positions:
+
+                for i in range(0,5):
+                    pos = closed.arg_max()
+                    self.bottlenecks.append(pos)
+                #self.bottlenecks = closed.sorted_keys()[:5]
 
             elif current_state not in closed:
                 closed[current_state.get_agent_position(self.index)] = 1
@@ -462,10 +468,13 @@ class DefensiveReflexAgent(ReflexCaptureAgent):
                         visited_position = successor_state.get_agent_position(self.index)
                         closed[visited_position] += 1
 
+        #draw bottlenecks
         for bottleneck in self.bottlenecks:
             self.debug_draw(bottleneck, color=(158,224,32))
-        with open('botlenecks.txt', 'a') as f:
-            print(self.bottlenecks, file=f)
+
+        # #draw end-goal boundry
+        # for pos in end_positions:
+        #     self.debug_draw(pos, (122,244,32))
 
 
     def get_features(self, game_state, action):
