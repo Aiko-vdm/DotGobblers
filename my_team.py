@@ -177,7 +177,7 @@ class MinimaxOffensiveAgent(MiniMaxAgent):
         # TODO: Moet het hier .self zijn?
         self.walls = game_state.get_walls()
         self.dead_ends = {}
-        self.compute_dead_ends()
+       # self.compute_dead_ends()
         self.pos_history = []
         self.pos_hist_len = 4
 
@@ -350,6 +350,7 @@ class ReflexCaptureAgent(CaptureAgent):
     def __init__(self, index, time_for_computing=.1):
         super().__init__(index, time_for_computing)
         self.start = None
+        self.bottlenecks = []
 
     def register_initial_state(self, game_state):
         self.start = game_state.get_agent_position(self.index)
@@ -433,6 +434,39 @@ class DefensiveReflexAgent(ReflexCaptureAgent):
         super().register_initial_state(game_state)
         self.previous_food = self.get_food_you_are_defending(game_state).as_list()
         self.last_eaten_food = None
+        # BFS
+        agenda = util.Queue()
+        closed = util.Counter()
+        agenda.push(game_state)  # we push the starting state
+        bottlenecks = self.bottlenecks
+
+
+
+        opent_index = self.get_opponents(game_state)[0]
+        start_position = self.start
+        end_position = game_state.get_agent_position(opent_index)
+        while not agenda.is_empty():
+            current_state = agenda.pop()
+            if current_state.get_agent_position(self.index) == end_position:
+                self.bottlenecks = closed.sorted_keys()[:10]
+
+            elif current_state not in closed:
+                closed[current_state.get_agent_position(self.index)] = 1
+
+                legal_actions = current_state.get_legal_actions(self.index)
+                successor_states = [current_state.generate_successor(self.index, action) for action in legal_actions]
+                for successor_state in successor_states:
+                    if successor_state.get_agent_position(self.index) not in closed:
+                        agenda.push(successor_state)
+                    else:
+                        visited_position = successor_state.get_agent_position(self.index)
+                        closed[visited_position] += 1
+
+        for bottleneck in self.bottlenecks:
+            self.debug_draw(bottleneck, color=(158,224,32))
+        with open('botlenecks.txt', 'a') as f:
+            print(self.bottlenecks, file=f)
+
 
     def get_features(self, game_state, action):
         features = util.Counter()
