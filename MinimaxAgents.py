@@ -248,15 +248,18 @@ class MinimaxOffensiveAgent(MiniMaxAgent):
         else:
             carrying = state.num_carrying
             distance_to_home = self.get_maze_distance(my_pos, self.start)
+            time_left = game_state.data.timeleft
+            time = 1200
+            urgency = 1 - time_left / time
             if is_chased:
                 capsules = self.get_capsules(game_state)
                 if capsules:
                     capsule_dists = [self.get_maze_distance(my_pos, capsule) for capsule in capsules]
                     features['dist_to_capsule'] = min(capsule_dists)
                 else:
-                    features['return_home'] = carrying * distance_to_home
+                    features['return_home'] = carrying * distance_to_home * urgency
             else:
-                features['return_home'] = carrying * distance_to_home
+                features['return_home'] = carrying * distance_to_home * urgency
 
         if active_defenders:
             for defender in active_defenders:
