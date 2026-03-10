@@ -293,8 +293,6 @@ class MinimaxOffensiveAgent(MiniMaxAgent):
                    'walk_into_defender': -10000}
         return weights
 
-
-
 class MinimaxDefensiveAgent(MiniMaxAgent):
 
     def evaluate(self, game_state):
