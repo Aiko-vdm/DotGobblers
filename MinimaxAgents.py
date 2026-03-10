@@ -171,7 +171,7 @@ class MinimaxOffensiveAgent(MiniMaxAgent):
         weights = self.get_weights()
 
         return features * weights
-    def get_features_latest(self, game_state):
+    def get_features(self, game_state):
         features = util.Counter()
         food_list = self.get_food(game_state).as_list()
 
