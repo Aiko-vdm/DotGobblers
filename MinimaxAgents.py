@@ -167,11 +167,11 @@ class MinimaxOffensiveAgent(MiniMaxAgent):
                     self.debug_draw(x, color=(1, 1, 1))
     
     def evaluate(self, game_state):
-        features = self.get_features(game_state)
-        weights = self.get_weights()
+        features = self.get_features_no_clust(game_state)
+        weights = self.get_weights_no_clust()
 
         return features * weights
-    def get_features(self, game_state):
+    def get_features_latest(self, game_state):
         features = util.Counter()
         food_list = self.get_food(game_state).as_list()
 
@@ -272,7 +272,85 @@ class MinimaxOffensiveAgent(MiniMaxAgent):
                    'walk_into_defender': -10000}
 
         return features
-    def get_weights(self):
+    
+    def get_features_no_clust(self,game_state):
+        features = util.Counter()
+        food_list = self.get_food(game_state).as_list()
+
+        state = game_state.get_agent_state(self.index)
+        my_pos = state.get_position()
+
+        #TODO doc
+        if my_pos is None:
+            return 0
+        
+        enemies = [game_state.get_agent_state(i) for i in self.get_opponents(game_state)]
+        defenders = [a for a in enemies if not a.is_pacman and a.get_position() is not None]
+
+        active_defenders = [a for a in defenders if a.scared_timer == 0]
+        scared_defenders = [a for a in defenders if a.scared_timer > 0]
+        is_chased = False
+        closest_defender_dist = float('inf')
+        if active_defenders:
+            defender_dists = [self.get_maze_distance(my_pos, a.get_position()) for a in active_defenders]
+            closest_defender_dist = min(defender_dists)
+            is_chased = closest_defender_dist <= 5
+
+        if state.is_pacman and closest_defender_dist <= 5:
+            features['ghost_proximity'] = 10 - closest_defender_dist
+        #FIXME: misschien beter om hier "food carying" van te maken en successor score effectief op self.get_score zetten
+        features['successor_score'] = -len(food_list)  # self.get_score(successor)
+
+        if scared_defenders:
+            min_scared_timer = min(a.scared_timer for a in scared_defenders)
+            if min_scared_timer >= 5:
+                features['return_home'] = 0
+                features['dead_end'] = 0
+        else:
+            carrying = state.num_carrying
+            distance_to_home = self.get_maze_distance(my_pos, self.start)
+            if is_chased and carrying >= 4:
+                features['return_home'] = carrying * distance_to_home
+            elif is_chased and carrying < 4:
+                capsules = self.get_capsules(game_state)
+                if capsules:
+                    capsule_dists = [self.get_maze_distance(my_pos, capsule) for capsule in capsules]
+                    features['dist_to_capsule'] = min(capsule_dists)
+                else:
+                    features['return_home'] = carrying * distance_to_home
+            else:
+                features['return_home'] = carrying * distance_to_home
+
+        if active_defenders:
+            for defender in active_defenders:
+                defender_pos = defender.get_position()
+                if my_pos == defender_pos: features['walk_into_defender'] = 1
+        if my_pos in self.dead_ends:
+            depth = self.dead_ends[my_pos]
+            if closest_defender_dist <= depth * 2:
+                features['dead_end'] = 1
+
+        if self.pos_history:
+            count = self.pos_history.count(my_pos)
+            features['reverse'] = count
+
+        if len(food_list) > 0:  # This should always be True,  but better safe than sorry
+            min_distance = min([self.get_maze_distance(my_pos, food) for food in food_list])
+            features['distance_to_food'] = min_distance
+        return features
+    
+    def get_weights_no_clust(self):
+        weights = {'successor_score': 1000,
+                   'distance_to_food': -5,
+                   'return_home': -2,
+                   'dead_end': -100,
+                   'reverse': -1000,
+                   'ghost_proximity': -10,
+                   'dist_to_capsule': -8,
+                   'walk_into_defender': -10000}
+        return weights
+    
+    def get_weights_latest(self):
         weights = {'successor_score': 1000,
                    'distance_to_cluster': -5,
                    'cluster_size': 10,
