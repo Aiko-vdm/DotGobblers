@@ -29,5 +29,5 @@ MinimaxV1-VS-MinimaxV2:
     -u MinimaxV1-VS-MinimaxV2 \
     -r {{MinimaxV1}} \
     --red-name MinimaxV1 \
-    -b {{MinimaxV2}}\
+    -b {{MinimaxV2}} \
     --blue-name MinimaxV2
