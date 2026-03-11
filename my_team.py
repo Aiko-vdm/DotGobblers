@@ -177,7 +177,7 @@ class MinimaxOffensiveAgent(MiniMaxAgent):
         # TODO: Moet het hier .self zijn?
         self.walls = game_state.get_walls()
         self.dead_ends = {}
-       # self.compute_dead_ends()
+        self.compute_dead_ends()
         self.pos_history = []
         self.pos_hist_len = 4
 
@@ -350,7 +350,7 @@ class ReflexCaptureAgent(CaptureAgent):
     def __init__(self, index, time_for_computing=.1):
         super().__init__(index, time_for_computing)
         self.start = None
-        self.bottlenecks = []
+        self.bottlenecks = None
 
     def register_initial_state(self, game_state):
         self.start = game_state.get_agent_position(self.index)
@@ -450,10 +450,12 @@ class DefensiveReflexAgent(ReflexCaptureAgent):
             current_state = agenda.pop()
             #if current_state.get_agent_position(self.index) == end_position:
             if current_state.get_agent_position(self.index) in end_positions:
-
-                for i in range(0,5):
+                bottlenecks = []
+                for i in range(0,10):
                     pos = closed.arg_max()
-                    self.bottlenecks.append(pos)
+                    closed[pos]=0
+                    bottlenecks.append(pos)
+                self.bottlenecks = bottlenecks
                 #self.bottlenecks = closed.sorted_keys()[:5]
 
             elif current_state not in closed:
