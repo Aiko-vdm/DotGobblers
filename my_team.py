@@ -350,7 +350,6 @@ class ReflexCaptureAgent(CaptureAgent):
     def __init__(self, index, time_for_computing=.1):
         super().__init__(index, time_for_computing)
         self.start = None
-        self.bottlenecks = None
 
     def register_initial_state(self, game_state):
         self.start = game_state.get_agent_position(self.index)
@@ -429,34 +428,66 @@ class DefensiveReflexAgent(ReflexCaptureAgent):
     could be like.  It is not the best or only way to make
     such an agent.
     """
+    def __init__(self, index, time_for_computing=.1):
+        super().__init__(index, time_for_computing)
+        self.bottleneck_positions = None
+        self.high_traffic_positions = None
+
 
     def register_initial_state(self, game_state):
         super().register_initial_state(game_state)
         self.previous_food = self.get_food_you_are_defending(game_state).as_list()
         self.last_eaten_food = None
-        # BFS
+        #self.find_high_traffic(game_state)
+        self.find_bottlenecks(game_state)
+
+        #draw bottlenecks
+        # for bottleneck in self.bottlenecks:
+        #     self.debug_draw(bottleneck, color=(158,224,32))
+
+    def find_bottlenecks(self, game_state):
+        def pos_is_gate(row,col,game_state):
+            if all([not game_state.has_wall(col, row),
+                    not game_state.has_wall(col + 1, row),
+                    not game_state.has_wall(col - 1, row),
+                    game_state.has_wall(col, row - 1),
+                    game_state.has_wall(col, row + 1)]):
+                return True
+            else:
+                return False
+        middle_x = (game_state.data.layout.width - 1) // 2 if self.red else game_state.data.layout.width // 2
+        defense_midfield_x = middle_x - middle_x // 2 if self.red else middle_x + middle_x // 2
+        result = []
+        maze_height = game_state.data.layout.height
+        maze_width = game_state.data.layout.width
+        for col in range(middle_x,defense_midfield_x):
+            for row in range(1,maze_height - 1 ):
+                if pos_is_gate(row,col,game_state):
+                    self.debug_draw((col,row), (122,244,32))
+                    result.append((col, row))
+        self.bottleneck_positions = result
+
+    def find_high_traffic(self, game_state):
         agenda = util.Queue()
         closed = util.Counter()
         agenda.push(game_state)  # we push the starting state
+        middle_x = (game_state.data.layout.width - 1) // 2 if self.red else game_state.data.layout.width // 2
+        defense_midfield_x = middle_x - middle_x // 2 if self.red else middle_x + middle_x // 2
 
+        midfield_pos = [(defense_midfield_x,y) for y in range(1,17) if not game_state.has_wall(defense_midfield_x, y)]
 
-        opent_index = self.get_opponents(game_state)[0]
-        start_position = self.start
-        #end_position = game_state.get_agent_position(opent_index)
-
-        # end position = reach the middle of the map
-        end_positions = [(16,y) for y in range(1,17)]
+        end_positions = [(middle_x, y) for y in range(1, 17) if not game_state.has_wall(middle_x,y)]
         while not agenda.is_empty():
             current_state = agenda.pop()
-            #if current_state.get_agent_position(self.index) == end_position:
+            # if current_state.get_agent_position(self.index) == end_position:
             if current_state.get_agent_position(self.index) in end_positions:
-                bottlenecks = []
-                for i in range(0,10):
+                high_trafic_points = []
+                for i in range(0, 10):
                     pos = closed.arg_max()
-                    closed[pos]=0
-                    bottlenecks.append(pos)
-                self.bottlenecks = bottlenecks
-                #self.bottlenecks = closed.sorted_keys()[:5]
+                    closed[pos] = 0
+                    high_trafic_points.append(pos)
+                #self.bottlenecks = bottlenecks
+                self.high_traffic_positions = closed.sorted_keys()[:5]
 
             elif current_state not in closed:
                 closed[current_state.get_agent_position(self.index)] = 1
@@ -469,15 +500,11 @@ class DefensiveReflexAgent(ReflexCaptureAgent):
                     else:
                         visited_position = successor_state.get_agent_position(self.index)
                         closed[visited_position] += 1
-
-        #draw bottlenecks
-        for bottleneck in self.bottlenecks:
-            self.debug_draw(bottleneck, color=(158,224,32))
-
-        # #draw end-goal boundry
+        #draw end-goal boundry
         # for pos in end_positions:
         #     self.debug_draw(pos, (122,244,32))
-
+        # for pos in midfield_pos:
+        #     self.debug_draw(pos, (122,244,32))
 
     def get_features(self, game_state, action):
         features = util.Counter()
