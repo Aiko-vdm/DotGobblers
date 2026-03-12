@@ -608,10 +608,17 @@ class DefensiveReflexAgent(ReflexCaptureAgent):
         return features
 
     def get_weights(self, game_state, action):
+        def is_scared():
+            if game_state.get_agent_state(self.index).scared_timer > 0:
+                return True
+            else:
+                return False
+        invader_distance_w = -10 if not is_scared() else 5
+        trapped_invader_distance_w = -100 if not is_scared() else 50
         return {'num_invaders': -1000,
                 'on_defense': 100,
-                'invader_distance': -10,
-                'trapped_invader_distance': -100,
+                'invader_distance': invader_distance_w,
+                'trapped_invader_distance': trapped_invader_distance_w,
                 'stop': -100,
                 'reverse': -2,
                 'distance_to_last_eaten_food': -10,
