@@ -26,6 +26,7 @@ import util
 from capture_agents import CaptureAgent
 from game import Directions
 from util import nearest_point
+from util import Queue
 #################
 # Team creation #
 #################
