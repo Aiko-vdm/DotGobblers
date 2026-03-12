@@ -431,15 +431,18 @@ class DefensiveReflexAgent(ReflexCaptureAgent):
         super().__init__(index, time_for_computing)
         self.bottleneck_positions = None
         self.high_traffic_positions = None
+        self.dead_ends = {}
 
 
     def register_initial_state(self, game_state):
         super().register_initial_state(game_state)
         self.previous_food = self.get_food_you_are_defending(game_state).as_list()
         self.last_eaten_food = None
+        self.walls = game_state.get_walls()
         #TODO: see if still useful
         #self.find_high_traffic(game_state)
         self.find_bottlenecks(game_state)
+        self.compute_dead_ends()
 
 
 
@@ -464,7 +467,6 @@ class DefensiveReflexAgent(ReflexCaptureAgent):
         defense_midfield_x = middle_x - middle_x // 2 if self.red else middle_x + middle_x // 2
         result = []
         maze_height = game_state.data.layout.height
-        maze_width = game_state.data.layout.width
         for col in range(middle_x,defense_midfield_x):
             for row in range(1,maze_height - 1 ):
                 if pos_is_gate(row,col,game_state):
@@ -510,7 +512,46 @@ class DefensiveReflexAgent(ReflexCaptureAgent):
         #     self.debug_draw(pos, (122,244,32))
         # for pos in midfield_pos:
         #     self.debug_draw(pos, (122,244,32))
+    # FIXME: Idealieter berekenen we dit slechts 1 keer, en sharen we deze data tussen beiden agents
+    #       Bovendien heeft de defensive agent slechts de helft van het grid nodig
+    def compute_dead_ends(self):
+        # FIXME: move import
+        walls = self.walls
+        neighbours = {}
+        degree = {}
 
+        for x in range(walls.width):
+            for y in range(walls.height):
+                if walls[x][y]:
+                    continue
+                not_wall = (x, y)
+                list_of_neighbours = []
+                for dx, dy in [(1, 0), (0, 1), (-1, 0), (0, -1)]:
+                    newx, newy = x + dx, y + dy
+
+                    if not walls[newx][newy]:
+                        list_of_neighbours.append((newx, newy))
+
+                neighbours[not_wall] = list_of_neighbours
+                degree[not_wall] = len(list_of_neighbours)
+
+        queue = Queue()
+        for not_wall in degree:
+            if degree[not_wall] == 1:
+                queue.push(not_wall)
+                self.dead_ends[not_wall] = 1
+                self.debug_draw(not_wall, color=(1, 1, 1))
+
+        while not queue.is_empty():
+            not_wall = queue.pop()
+            for x in neighbours[not_wall]:
+                if x not in degree: continue
+                degree[x] -= 1
+
+                if degree[x] == 1 and x not in self.dead_ends:
+                    self.dead_ends[x] = self.dead_ends[not_wall] + 1
+                    queue.push(x)
+                    self.debug_draw(x, color=(1, 1, 1))
     def get_features(self, game_state, action):
         features = util.Counter()
         current_food = self.get_food_you_are_defending(game_state).as_list()
@@ -548,6 +589,9 @@ class DefensiveReflexAgent(ReflexCaptureAgent):
         if len(invaders) > 0:
             dists = [self.get_maze_distance(my_pos, a.get_position()) for a in invaders]
             features['invader_distance'] = min(dists)
+            # Of those we see, how many are trapped in dead ends
+            dist_trapped = [self.get_maze_distance(my_pos, a.get_position()) for a in enemies if a in self.dead_ends]
+            features['trapped_invader_distance'] = min(dist_trapped) if len(dist_trapped) > 0 else 0
 
         if action == Directions.STOP: features['stop'] = 1
         rev = Directions.REVERSE[game_state.get_agent_state(self.index).configuration.direction]
@@ -557,8 +601,18 @@ class DefensiveReflexAgent(ReflexCaptureAgent):
             dist = self.get_maze_distance(my_pos, self.last_eaten_food)
             features['distance_to_last_eaten_food'] = dist
 
+        #distance to a bottleneck
+        bottleneck_dist = [self.get_maze_distance(my_pos, bottleneck) for bottleneck in self.bottleneck_positions]
+        features['bottleneck_distance'] = min(bottleneck_dist)
+
         return features
 
     def get_weights(self, game_state, action):
-        return {'num_invaders': -1000, 'on_defense': 100, 'invader_distance': -10, 'stop': -100, 'reverse': -2,
-                'distance_to_last_eaten_food': -10}
+        return {'num_invaders': -1000,
+                'on_defense': 100,
+                'invader_distance': -10,
+                'trapped_invader_distance': -100,
+                'stop': -100,
+                'reverse': -2,
+                'distance_to_last_eaten_food': -10,
+                'bottleneck_distance': -5}
