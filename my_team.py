@@ -438,12 +438,17 @@ class DefensiveReflexAgent(ReflexCaptureAgent):
         super().register_initial_state(game_state)
         self.previous_food = self.get_food_you_are_defending(game_state).as_list()
         self.last_eaten_food = None
+        #TODO: see if still useful
         #self.find_high_traffic(game_state)
         self.find_bottlenecks(game_state)
 
-        #draw bottlenecks
-        # for bottleneck in self.bottlenecks:
-        #     self.debug_draw(bottleneck, color=(158,224,32))
+
+
+        def draw_bottlenecks():
+            for bottleneck in self.bottleneck_positions:
+                self.debug_draw(bottleneck, color=(158,224,32))
+        # easier to comment out in one line
+        draw_bottlenecks()
 
     def find_bottlenecks(self, game_state):
         def pos_is_gate(row,col,game_state):
@@ -455,6 +460,7 @@ class DefensiveReflexAgent(ReflexCaptureAgent):
                 return True
             else:
                 return False
+
         middle_x = (game_state.data.layout.width - 1) // 2 if self.red else game_state.data.layout.width // 2
         defense_midfield_x = middle_x - middle_x // 2 if self.red else middle_x + middle_x // 2
         result = []
@@ -463,7 +469,7 @@ class DefensiveReflexAgent(ReflexCaptureAgent):
         for col in range(middle_x,defense_midfield_x):
             for row in range(1,maze_height - 1 ):
                 if pos_is_gate(row,col,game_state):
-                    self.debug_draw((col,row), (122,244,32))
+                   # self.debug_draw((col,row), (122,244,32))
                     result.append((col, row))
         self.bottleneck_positions = result
 
@@ -509,8 +515,9 @@ class DefensiveReflexAgent(ReflexCaptureAgent):
     def get_features(self, game_state, action):
         features = util.Counter()
         current_food = self.get_food_you_are_defending(game_state).as_list()
-        eaten = set(self.previous_food) - set(current_food)
 
+        # code bellow checks if our food is eaten and returns the closest position for which this is the case
+        eaten = set(self.previous_food) - set(current_food)
         if eaten:
             pos = game_state.get_agent_state(self.index).get_position()
             min_dist = float('inf')
@@ -520,8 +527,9 @@ class DefensiveReflexAgent(ReflexCaptureAgent):
                 if dist < min_dist:
                     min_dist = dist
                     closest = food
+            #FIXME: in init?
             self.last_eaten_food = closest
-
+        #FIXME: in init?
         self.previous_food = current_food
 
         successor = self.get_successor(game_state, action)
