@@ -175,10 +175,11 @@ class MiniMaxAgent(CaptureAgent):
 class MinimaxOffensiveAgent(MiniMaxAgent):
     def register_initial_state(self, game_state):
         super().register_initial_state(game_state)
-        # TODO: Moet het hier .self zijn?
         self.walls = game_state.get_walls()
+        # FIXME: kan in principe statisch worden geïnitialiseerd bij init
         self.dead_ends = {}
         self.compute_dead_ends()
+        # FIXME: beiden kunnen in principe statisch worden geïnitialiseerd bij init
         self.pos_history = []
         self.pos_hist_len = 4
 
@@ -191,6 +192,7 @@ class MinimaxOffensiveAgent(MiniMaxAgent):
 
     # TODO: make private/internal
     def compute_dead_ends(self):
+        # FIXME: move import
         from util import Queue
         walls = self.walls
         neighbours = {}
@@ -239,9 +241,6 @@ class MinimaxOffensiveAgent(MiniMaxAgent):
         features = util.Counter()
         food_list = self.get_food(game_state).as_list()
 
-        # TODO: Dit is eigenlijk code duplicatie uit andere agents die best vermeden wordt
-        #       Als je de compute cluster eens gaat willen aanpassen, ga je die op verschillende
-        #       plekken moeten aanpassen
         radius = 2  # beste radius??
 
         # ------- compute_clusters START
@@ -252,7 +251,6 @@ class MinimaxOffensiveAgent(MiniMaxAgent):
                 if self.get_maze_distance(food, rest_food) <= radius:
                     count += 1
             clusters.append((food, count))
-        # return clusters
         # -------- compute_clusters END
         best_food = None
         best_cluster_size = 0
@@ -265,7 +263,7 @@ class MinimaxOffensiveAgent(MiniMaxAgent):
         state = game_state.get_agent_state(self.index)
         my_pos = state.get_position()
 
-        # TODO doc
+        # TODO refactor naar lijn hierboven? my_pos = state.get_position() if state.get_position() is not none else 0
         if my_pos is None:
             return 0
 
@@ -539,6 +537,7 @@ class DefensiveReflexAgent(ReflexCaptureAgent):
         my_pos = my_state.get_position()
 
         # Computes whether we're on defense (1) or offense (0)
+        # TODO: check if still useful
         features['on_defense'] = 1
         if my_state.is_pacman: features['on_defense'] = 0
 
