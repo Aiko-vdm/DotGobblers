@@ -325,6 +325,8 @@ class MinimaxOffensiveAgent(MiniMaxAgent):
             if min_scared_timer >= 5:
                 features['return_home'] = 0
                 features['dead_end'] = 0
+                scared_dists = [self.get_maze_distance(my_pos, a.get_position()) for a in scared_defenders]
+                features['dist_to_scared_defender'] = min(scared_dists)
         else:
             carrying = state.num_carrying
             distance_to_home = self.get_maze_distance(my_pos, self.start)
@@ -361,12 +363,13 @@ class MinimaxOffensiveAgent(MiniMaxAgent):
                    'uneaten_food': -1000,
                    'distance_to_cluster': -5,
                    'cluster_size': 10,
-                   'return_home': -2,
+                   'return_home': -20,
                    'dead_end': -200,
                    'reverse': -8,
                    'ghost_proximity': -10,
                    'dist_to_capsule': -80,
-                   'walk_into_defender': -10000}
+                   'walk_into_defender': -10000,
+                   'dist_to_scared_defender': -100}
         return weights
 
 
