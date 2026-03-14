@@ -184,6 +184,7 @@ class MinimaxOffensiveAgent(MiniMaxAgent):
         self.pos_hist_len = 4
         self.hesitation_ctr = 0
         self.avoided_cluster = None
+        self.avoided_cluster_timer = 0
 
     def choose_action(self, game_state):
         my_pos = game_state.get_agent_state(self.index).get_position()
@@ -191,6 +192,9 @@ class MinimaxOffensiveAgent(MiniMaxAgent):
         if my_pos is not None:
             self.pos_history.append(my_pos)
             if len(self.pos_history) > self.pos_hist_len: self.pos_history.pop(0)
+            if self.avoided_cluster_timer > 0: 
+                self.avoided_cluster_timer -= 1 
+            else: self.avoided_cluster = None
             if not state.is_pacman:
                 enemies = [game_state.get_agent_state(i) for i in self.get_opponents(game_state)]
                 defenders = [a for a in enemies if not a.is_pacman and a.get_position() is not None and a.scared_timer == 0]
@@ -202,6 +206,7 @@ class MinimaxOffensiveAgent(MiniMaxAgent):
                 else: self.hesitation_ctr = 0
                 if self.hesitation_ctr >= 5:
                     self.avoided_cluster = self.curr_target_cluster
+                    self.avoided_cluster_timer = 20
                     self.hesitation_ctr = 0
             else: self.hesitation_counter = 0
         return super().choose_action(game_state)
