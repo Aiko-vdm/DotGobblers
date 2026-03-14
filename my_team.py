@@ -182,12 +182,28 @@ class MinimaxOffensiveAgent(MiniMaxAgent):
         # FIXME: beiden kunnen in principe statisch worden geïnitialiseerd bij init
         self.pos_history = []
         self.pos_hist_len = 4
+        self.hesitation_ctr = 0
+        self.avoided_cluster = None
 
     def choose_action(self, game_state):
         my_pos = game_state.get_agent_state(self.index).get_position()
+        state = game_state.get_agent_state(self.index)
         if my_pos is not None:
             self.pos_history.append(my_pos)
             if len(self.pos_history) > self.pos_hist_len: self.pos_history.pop(0)
+            if not state.is_pacman:
+                enemies = [game_state.get_agent_state(i) for i in self.get_opponents(game_state)]
+                defenders = [a for a in enemies if not a.is_pacman and a.get_position() is not None and a.scared_timer == 0]
+                if defenders:
+                    min_dist = min(self.get_maze_distance(my_pos, a.get_position()) for a in defenders)
+                    if min_dist <= 5:
+                        self.hesitation_ctr += 1
+                    else: self.hesitation_ctr = 0
+                else: self.hesitation_ctr = 0
+                if self.hesitation_ctr >= 5:
+                    self.avoided_cluster = self.curr_target_cluster
+                    self.hesitation_ctr = 0
+            else: self.hesitation_counter = 0
         return super().choose_action(game_state)
 
     # TODO: make private/internal
@@ -256,10 +272,18 @@ class MinimaxOffensiveAgent(MiniMaxAgent):
         best_cluster_size = 0
 
         for food, size in clusters:
+            if food == self.avoided_cluster: continue
             if size > best_cluster_size:
                 best_cluster_size = size
                 best_food = food
 
+        if best_food is None:
+            for food, size in clusters:
+                if size > best_cluster_size:
+                    best_cluster_size = size
+                    best_food = food
+
+        self.curr_target_cluster = best_food
         state = game_state.get_agent_state(self.index)
         my_pos = state.get_position()
 
