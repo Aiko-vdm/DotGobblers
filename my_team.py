@@ -359,17 +359,17 @@ class MinimaxOffensiveAgent(MiniMaxAgent):
         return features
 
     def get_weights(self):
-        weights = {'score': 0,
-                   'uneaten_food': -1000,
-                   'distance_to_cluster': -5,
-                   'cluster_size': 10,
-                   'return_home': -20,
-                   'dead_end': -200,
-                   'reverse': -8,
+        weights = {'score': 100,
+                   'uneaten_food': -100,
+                   'distance_to_cluster': -1,
+                   'cluster_size': 1,
+                   'return_home': -1,
+                   'dead_end': -75,
+                   'reverse': 0,
                    'ghost_proximity': -10,
-                   'dist_to_capsule': -80,
-                   'walk_into_defender': -10000,
-                   'dist_to_scared_defender': -100}
+                   'dist_to_capsule': -5,
+                   'walk_into_defender': -100,
+                   'dist_to_scared_defender': -10}
         return weights
 
 
