@@ -339,7 +339,7 @@ class MinimaxOffensiveAgent(MiniMaxAgent):
                     capsule_dists = [self.get_maze_distance(my_pos, capsule) for capsule in capsules]
                     features['dist_to_capsule'] = min(capsule_dists)
                 else:
-                    features['return_home'] = carrying * distance_to_home * urgency
+                    features['return_home'] = carrying * distance_to_home * urgency * 5
             else:
                 features['return_home'] = carrying * distance_to_home * urgency
 
@@ -367,9 +367,9 @@ class MinimaxOffensiveAgent(MiniMaxAgent):
                    'dead_end': -75,
                    'reverse': 0,
                    'ghost_proximity': -10,
-                   'dist_to_capsule': -5,
+                   'dist_to_capsule': -10,
                    'walk_into_defender': -100,
-                   'dist_to_scared_defender': -10}
+                   'dist_to_scared_defender': -15}
         return weights
 
 
