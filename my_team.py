@@ -384,7 +384,50 @@ class ReflexCaptureAgent(CaptureAgent):
 
     def register_initial_state(self, game_state):
         self.start = game_state.get_agent_position(self.index)
+        self.walls = game_state.get_walls()
+        self.dead_ends = {}
         CaptureAgent.register_initial_state(self, game_state)
+        self.compute_dead_ends()
+        
+
+    def compute_dead_ends(self):
+        # FIXME: move import
+        walls = self.walls
+        neighbours = {}
+        degree = {}
+
+        for x in range(walls.width):
+            for y in range(walls.height):
+                if walls[x][y]:
+                    continue
+                not_wall = (x, y)
+                list_of_neighbours = []
+                for dx, dy in [(1, 0), (0, 1), (-1, 0), (0, -1)]:
+                    newx, newy = x + dx, y + dy
+
+                    if not walls[newx][newy]:
+                        list_of_neighbours.append((newx, newy))
+
+                neighbours[not_wall] = list_of_neighbours
+                degree[not_wall] = len(list_of_neighbours)
+
+        queue = Queue()
+        for not_wall in degree:
+            if degree[not_wall] == 1:
+                queue.push(not_wall)
+                self.dead_ends[not_wall] = 1
+                self.debug_draw(not_wall, color=(1, 1, 1))
+
+        while not queue.is_empty():
+            not_wall = queue.pop()
+            for x in neighbours[not_wall]:
+                if x not in degree: continue
+                degree[x] -= 1
+
+                if degree[x] == 1 and x not in self.dead_ends:
+                    self.dead_ends[x] = self.dead_ends[not_wall] + 1
+                    queue.push(x)
+                    self.debug_draw(x, color=(1, 1, 1))
 
     def choose_action(self, game_state):
         """
@@ -463,18 +506,15 @@ class DefensiveReflexAgent(ReflexCaptureAgent):
         super().__init__(index, time_for_computing)
         self.bottleneck_positions = None
         self.high_traffic_positions = None
-        self.dead_ends = {}
 
 
     def register_initial_state(self, game_state):
         super().register_initial_state(game_state)
         self.previous_food = self.get_food_you_are_defending(game_state).as_list()
         self.last_eaten_food = None
-        self.walls = game_state.get_walls()
         #TODO: see if still useful
         #self.find_high_traffic(game_state)
         self.find_bottlenecks(game_state)
-        self.compute_dead_ends()
 
 
 
@@ -544,46 +584,7 @@ class DefensiveReflexAgent(ReflexCaptureAgent):
         #     self.debug_draw(pos, (122,244,32))
         # for pos in midfield_pos:
         #     self.debug_draw(pos, (122,244,32))
-    # FIXME: Idealieter berekenen we dit slechts 1 keer, en sharen we deze data tussen beiden agents
-    #       Bovendien heeft de defensive agent slechts de helft van het grid nodig
-    def compute_dead_ends(self):
-        # FIXME: move import
-        walls = self.walls
-        neighbours = {}
-        degree = {}
-
-        for x in range(walls.width):
-            for y in range(walls.height):
-                if walls[x][y]:
-                    continue
-                not_wall = (x, y)
-                list_of_neighbours = []
-                for dx, dy in [(1, 0), (0, 1), (-1, 0), (0, -1)]:
-                    newx, newy = x + dx, y + dy
-
-                    if not walls[newx][newy]:
-                        list_of_neighbours.append((newx, newy))
-
-                neighbours[not_wall] = list_of_neighbours
-                degree[not_wall] = len(list_of_neighbours)
-
-        queue = Queue()
-        for not_wall in degree:
-            if degree[not_wall] == 1:
-                queue.push(not_wall)
-                self.dead_ends[not_wall] = 1
-                self.debug_draw(not_wall, color=(1, 1, 1))
-
-        while not queue.is_empty():
-            not_wall = queue.pop()
-            for x in neighbours[not_wall]:
-                if x not in degree: continue
-                degree[x] -= 1
-
-                if degree[x] == 1 and x not in self.dead_ends:
-                    self.dead_ends[x] = self.dead_ends[not_wall] + 1
-                    queue.push(x)
-                    self.debug_draw(x, color=(1, 1, 1))
+    
     def get_features(self, game_state, action):
         features = util.Counter()
         current_food = self.get_food_you_are_defending(game_state).as_list()
@@ -664,50 +665,9 @@ class OffensiveReflexAgent(ReflexCaptureAgent):
   """
     def register_initial_state(self, game_state):
         super().register_initial_state(game_state)
-        self.walls = game_state.get_walls()
-        self.dead_ends = {}
-        self.compute_dead_ends()
         self.pos_history = []
         self.pos_hist_len = 4
 
-    def compute_dead_ends(self):
-        # FIXME: move import
-        walls = self.walls
-        neighbours = {}
-        degree = {}
-
-        for x in range(walls.width):
-            for y in range(walls.height):
-                if walls[x][y]:
-                    continue
-                not_wall = (x, y)
-                list_of_neighbours = []
-                for dx, dy in [(1, 0), (0, 1), (-1, 0), (0, -1)]:
-                    newx, newy = x + dx, y + dy
-
-                    if not walls[newx][newy]:
-                        list_of_neighbours.append((newx, newy))
-
-                neighbours[not_wall] = list_of_neighbours
-                degree[not_wall] = len(list_of_neighbours)
-
-        queue = Queue()
-        for not_wall in degree:
-            if degree[not_wall] == 1:
-                queue.push(not_wall)
-                self.dead_ends[not_wall] = 1
-                self.debug_draw(not_wall, color=(1, 1, 1))
-
-        while not queue.is_empty():
-            not_wall = queue.pop()
-            for x in neighbours[not_wall]:
-                if x not in degree: continue
-                degree[x] -= 1
-
-                if degree[x] == 1 and x not in self.dead_ends:
-                    self.dead_ends[x] = self.dead_ends[not_wall] + 1
-                    queue.push(x)
-                    self.debug_draw(x, color=(1, 1, 1))    
     def choose_action(self, game_state):
         my_pos = game_state.get_agent_state(self.index).get_position()
         state = game_state.get_agent_state(self.index)
