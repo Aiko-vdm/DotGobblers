@@ -32,7 +32,7 @@ from util import Queue
 #################
 
 def create_team(first_index, second_index, is_red,
-                first='MinimaxOffensiveAgent', second='DefensiveReflexAgent2', num_training=0):
+                first='MinimaxOffensiveAgent', second='DefensiveReflexAgent', num_training=0):
     """
     This function should return a list of two agents that will form the
     team, initialized using firstIndex and secondIndex as their agent
@@ -499,7 +499,12 @@ class DefensiveReflexAgent(ReflexCaptureAgent):
         defense_midfield_x = middle_x - middle_x // 2 if self.red else middle_x + middle_x // 2
         result = []
         maze_height = game_state.data.layout.height
-        for col in range(middle_x,defense_midfield_x):
+
+        blue_colrange = range(middle_x, defense_midfield_x)
+        red_colrange = range(defense_midfield_x, middle_x)
+        colrange = red_colrange if self.red else blue_colrange
+
+        for col in colrange:
             for row in range(1,maze_height - 1 ):
                 if pos_is_gate(row,col,game_state):
                    # self.debug_draw((col,row), (122,244,32))
