@@ -32,7 +32,7 @@ from util import Queue
 #################
 
 def create_team(first_index, second_index, is_red,
-                first='MinimaxOffensiveAgent', second='DefensiveReflexAgent', num_training=0):
+                first='MinimaxOffensiveAgent', second='DefensiveReflexAgent2', num_training=0):
     """
     This function should return a list of two agents that will form the
     team, initialized using firstIndex and secondIndex as their agent
@@ -182,12 +182,33 @@ class MinimaxOffensiveAgent(MiniMaxAgent):
         # FIXME: beiden kunnen in principe statisch worden geïnitialiseerd bij init
         self.pos_history = []
         self.pos_hist_len = 4
+        self.hesitation_ctr = 0
+        self.avoided_cluster = None
+        self.avoided_cluster_timer = 0
 
     def choose_action(self, game_state):
         my_pos = game_state.get_agent_state(self.index).get_position()
+        state = game_state.get_agent_state(self.index)
         if my_pos is not None:
             self.pos_history.append(my_pos)
             if len(self.pos_history) > self.pos_hist_len: self.pos_history.pop(0)
+            if self.avoided_cluster_timer > 0: 
+                self.avoided_cluster_timer -= 1 
+            else: self.avoided_cluster = None
+            if not state.is_pacman:
+                enemies = [game_state.get_agent_state(i) for i in self.get_opponents(game_state)]
+                defenders = [a for a in enemies if not a.is_pacman and a.get_position() is not None and a.scared_timer == 0]
+                if defenders:
+                    min_dist = min(self.get_maze_distance(my_pos, a.get_position()) for a in defenders)
+                    if min_dist <= 5:
+                        self.hesitation_ctr += 1
+                    else: self.hesitation_ctr = 0
+                else: self.hesitation_ctr = 0
+                if self.hesitation_ctr >= 5:
+                    self.avoided_cluster = self.curr_target_cluster
+                    self.avoided_cluster_timer = 20
+                    self.hesitation_ctr = 0
+            else: self.hesitation_counter = 0
         return super().choose_action(game_state)
 
     # TODO: make private/internal
@@ -256,10 +277,18 @@ class MinimaxOffensiveAgent(MiniMaxAgent):
         best_cluster_size = 0
 
         for food, size in clusters:
+            if food == self.avoided_cluster: continue
             if size > best_cluster_size:
                 best_cluster_size = size
                 best_food = food
 
+        if best_food is None:
+            for food, size in clusters:
+                if size > best_cluster_size:
+                    best_cluster_size = size
+                    best_food = food
+
+        self.curr_target_cluster = best_food
         state = game_state.get_agent_state(self.index)
         my_pos = state.get_position()
 
@@ -296,6 +325,8 @@ class MinimaxOffensiveAgent(MiniMaxAgent):
             if min_scared_timer >= 5:
                 features['return_home'] = 0
                 features['dead_end'] = 0
+                scared_dists = [self.get_maze_distance(my_pos, a.get_position()) for a in scared_defenders]
+                features['dist_to_scared_defender'] = min(scared_dists)
         else:
             carrying = state.num_carrying
             distance_to_home = self.get_maze_distance(my_pos, self.start)
@@ -308,7 +339,7 @@ class MinimaxOffensiveAgent(MiniMaxAgent):
                     capsule_dists = [self.get_maze_distance(my_pos, capsule) for capsule in capsules]
                     features['dist_to_capsule'] = min(capsule_dists)
                 else:
-                    features['return_home'] = carrying * distance_to_home * urgency
+                    features['return_home'] = carrying * distance_to_home * urgency * 5
             else:
                 features['return_home'] = carrying * distance_to_home * urgency
 
@@ -328,16 +359,17 @@ class MinimaxOffensiveAgent(MiniMaxAgent):
         return features
 
     def get_weights(self):
-        weights = {'score': 0,
-                   'uneaten_food': -1000,
-                   'distance_to_cluster': -5,
-                   'cluster_size': 10,
-                   'return_home': -2,
-                   'dead_end': -200,
-                   'reverse': -8,
+        weights = {'score': 100,
+                   'uneaten_food': -100,
+                   'distance_to_cluster': -1,
+                   'cluster_size': 1,
+                   'return_home': -1,
+                   'dead_end': -75,
+                   'reverse': 0,
                    'ghost_proximity': -10,
-                   'dist_to_capsule': -80,
-                   'walk_into_defender': -10000}
+                   'dist_to_capsule': -10,
+                   'walk_into_defender': -100,
+                   'dist_to_scared_defender': -15}
         return weights
 
 
