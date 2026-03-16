@@ -1,0 +1,382 @@
+
+Red team agents/DotGobblers/analysis/ResearchTeams/OffensiveV2.py with {}:
+Loading agent team: /Users/eliseygretchko/Repositories/unif/capture-the-flag/agents/DotGobblers/analysis/ResearchTeams/OffensiveV2.py
+	Arguments: {}
+
+Blue team agents/DotGobblers/analysis/ResearchTeams/DefensiveV2.py with {}:
+Loading agent team: /Users/eliseygretchko/Repositories/unif/capture-the-flag/agents/DotGobblers/analysis/ResearchTeams/DefensiveV2.py
+	Arguments: {}
+1
+1
+1
+1
+0
+1
+2
+1
+2
+2
+1
+2
+2
+1
+1
+1
+1
+1
+0
+0
+1
+1
+1
+2
+3
+1
+2
+1
+1
+1
+1
+2
+1
+0
+1
+2
+1
+1
+0
+1
+3
+0
+1
+1
+1
+1
+2
+1
+0
+0
+3
+1
+2
+1
+1
+1
+2
+1
+3
+3
+1
+3
+2
+1
+3
+1
+1
+3
+3
+2
+{'display': <text_display.NullGraphics object at 0x1052bb620>, 'red_team_name': 'Offensive', 'blue_team_name': 'Defensive-V2', 'agents': [<OffensiveV2.MinimaxOffensiveAgent object at 0x105368440>, <DefensiveV2.DefensiveReflexAgent object at 0x105368d70>, <OffensiveV2.DefensiveReflexAgent object at 0x105368590>, <DefensiveV2.DefensiveReflexAgent object at 0x105348550>], 'layouts': [<layout.Layout object at 0x105369160>, <layout.Layout object at 0x105349a90>, <layout.Layout object at 0x10534a210>, <layout.Layout object at 0x1052d3a80>, <layout.Layout object at 0x1052d3bb0>, <layout.Layout object at 0x105301490>, <layout.Layout object at 0x105359ae0>, <layout.Layout object at 0x105359d00>, <layout.Layout object at 0x105306750>, <layout.Layout object at 0x105306a50>, <layout.Layout object at 0x1052e7a70>, <layout.Layout object at 0x1052e7b60>, <layout.Layout object at 0x1052de350>, <layout.Layout object at 0x1052de430>, <layout.Layout object at 0x1052d6a90>, <layout.Layout object at 0x10547e750>, <layout.Layout object at 0x10548dc10>, <layout.Layout object at 0x10536f070>, <layout.Layout object at 0x10536f120>, <layout.Layout object at 0x10536f1d0>, <layout.Layout object at 0x10536f280>, <layout.Layout object at 0x10536f330>, <layout.Layout object at 0x10536f3e0>, <layout.Layout object at 0x10535e4c0>, <layout.Layout object at 0x10536d440>, <layout.Layout object at 0x10536f490>, <layout.Layout object at 0x10536f540>, <layout.Layout object at 0x10536f5f0>, <layout.Layout object at 0x10536f6a0>, <layout.Layout object at 0x10536f750>, <layout.Layout object at 0x10536f800>, <layout.Layout object at 0x10536f8b0>, <layout.Layout object at 0x10536f960>, <layout.Layout object at 0x10536fa10>, <layout.Layout object at 0x10536fac0>, <layout.Layout object at 0x10536fb70>, <layout.Layout object at 0x10536fc20>, <layout.Layout object at 0x10536fcd0>, <layout.Layout object at 0x10536fd80>, <layout.Layout object at 0x10536fe30>, <layout.Layout object at 0x10536fee0>, <layout.Layout object at 0x10553c050>, <layout.Layout object at 0x10553c100>, <layout.Layout object at 0x10553c1b0>, <layout.Layout object at 0x10553c260>, <layout.Layout object at 0x10553c310>, <layout.Layout object at 0x10553c3c0>, <layout.Layout object at 0x10553c470>, <layout.Layout object at 0x10553c520>, <layout.Layout object at 0x10553c5d0>, <layout.Layout object at 0x10553c680>, <layout.Layout object at 0x10553c730>, <layout.Layout object at 0x10553c7e0>, <layout.Layout object at 0x10553c890>, <layout.Layout object at 0x10553c940>, <layout.Layout object at 0x10553c9f0>, <layout.Layout object at 0x10553caa0>, <layout.Layout object at 0x10553cb50>, <layout.Layout object at 0x10553cc00>, <layout.Layout object at 0x10553ccb0>, <layout.Layout object at 0x10553cd60>, <layout.Layout object at 0x10553ce10>, <layout.Layout object at 0x10553cec0>, <layout.Layout object at 0x10553cf70>, <layout.Layout object at 0x10553d020>, <layout.Layout object at 0x10553d0d0>, <layout.Layout object at 0x10553d180>, <layout.Layout object at 0x10553d230>, <layout.Layout object at 0x10553d2e0>, <layout.Layout object at 0x10553d390>], 'length': 1200, 'num_games': 70, 'num_training': 0, 'record': True, 'catch_exceptions': True, 'delay_step': 0.0, 'match_id': 0, 'contest_name': 'defensiveV2'}
+Blue team starts
+Time is up.
+Tie game!
+recorded
+Blue team starts
+Time is up.
+Tie game!
+recorded
+Blue team starts
+Time is up.
+Tie game!
+recorded
+Red team starts
+Agent 0 took too long to make a move! This is warning 1
+Time is up.
+The Red team wins by 6 points.
+recorded
+Blue team starts
+Agent 0 took too long to make a move! This is warning 1
+Agent 0 took too long to make a move! This is warning 2
+Agent 0 took too long to make a move! This is warning 3
+Agent 0 exceeded the maximum number of warnings: 3
+Red agent crashed
+recorded
+Red team starts
+Time is up.
+The Red team wins by 4 points.
+recorded
+Red team starts
+Time is up.
+The Red team wins by 6 points.
+recorded
+Red team starts
+Time is up.
+The Red team wins by 19 points.
+recorded
+Red team starts
+Time is up.
+The Red team wins by 5 points.
+recorded
+Blue team starts
+Time is up.
+The Red team wins by 6 points.
+recorded
+Red team starts
+Time is up.
+The Red team wins by 14 points.
+recorded
+Red team starts
+Time is up.
+The Red team wins by 2 points.
+recorded
+Blue team starts
+Time is up.
+Tie game!
+recorded
+Red team starts
+Time is up.
+Tie game!
+recorded
+Blue team starts
+Time is up.
+The Red team wins by 11 points.
+recorded
+Red team starts
+Agent 0 took too long to make a move! This is warning 1
+Agent 0 took too long to make a move! This is warning 2
+Agent 0 took too long to make a move! This is warning 3
+Agent 0 exceeded the maximum number of warnings: 3
+Red agent crashed
+recorded
+Red team starts
+Time is up.
+The Red team wins by 3 points.
+recorded
+Red team starts
+Time is up.
+The Red team wins by 23 points.
+recorded
+Blue team starts
+Time is up.
+Tie game!
+recorded
+Red team starts
+Time is up.
+Tie game!
+recorded
+Red team starts
+Time is up.
+The Red team wins by 3 points.
+recorded
+Red team starts
+Time is up.
+Tie game!
+recorded
+Red team starts
+Time is up.
+The Red team wins by 2 points.
+recorded
+Red team starts
+Time is up.
+The Red team wins by 1 points.
+recorded
+Red team starts
+Agent 0 took too long to make a move! This is warning 1
+Time is up.
+The Red team wins by 4 points.
+recorded
+Blue team starts
+Time is up.
+The Red team wins by 10 points.
+recorded
+Blue team starts
+Time is up.
+The Red team wins by 26 points.
+recorded
+Red team starts
+Time is up.
+Tie game!
+recorded
+Blue team starts
+Time is up.
+Tie game!
+recorded
+Blue team starts
+Time is up.
+Tie game!
+recorded
+Red team starts
+Time is up.
+The Red team wins by 4 points.
+recorded
+Red team starts
+Time is up.
+Tie game!
+recorded
+Red team starts
+Agent 0 took too long to make a move! This is warning 1
+Time is up.
+The Red team wins by 17 points.
+recorded
+Red team starts
+Time is up.
+The Red team wins by 2 points.
+recorded
+Blue team starts
+Agent 0 took too long to make a move! This is warning 1
+Time is up.
+The Red team wins by 11 points.
+recorded
+Blue team starts
+Time is up.
+The Red team wins by 6 points.
+recorded
+Red team starts
+Time is up.
+The Red team wins by 24 points.
+recorded
+Blue team starts
+Agent 0 took too long to make a move! This is warning 1
+Time is up.
+Tie game!
+recorded
+Blue team starts
+Time is up.
+Tie game!
+recorded
+Red team starts
+Time is up.
+The Red team wins by 20 points.
+recorded
+Red team starts
+Time is up.
+Tie game!
+recorded
+Red team starts
+Time is up.
+Tie game!
+recorded
+Red team starts
+Time is up.
+The Red team wins by 3 points.
+recorded
+Blue team starts
+Time is up.
+The Red team wins by 2 points.
+recorded
+Blue team starts
+Time is up.
+Tie game!
+recorded
+Red team starts
+Agent 0 took too long to make a move! This is warning 1
+Time is up.
+Tie game!
+recorded
+Blue team starts
+Time is up.
+The Red team wins by 5 points.
+recorded
+Red team starts
+Time is up.
+The Red team wins by 11 points.
+recorded
+Red team starts
+Time is up.
+The Red team wins by 14 points.
+recorded
+Blue team starts
+Time is up.
+Tie game!
+recorded
+Red team starts
+Time is up.
+The Red team wins by 19 points.
+recorded
+Red team starts
+Agent 0 took too long to make a move! This is warning 1
+Agent 0 took too long to make a move! This is warning 2
+Agent 0 took too long to make a move! This is warning 3
+Agent 0 exceeded the maximum number of warnings: 3
+Red agent crashed
+recorded
+Red team starts
+The Red team has returned at least 28.0 of the opponents' dots.
+recorded
+Red team starts
+The Red team has returned at least 28.0 of the opponents' dots.
+recorded
+Blue team starts
+Time is up.
+The Red team wins by 17 points.
+recorded
+Red team starts
+Time is up.
+Tie game!
+recorded
+Red team starts
+Agent 0 took too long to make a move! This is warning 1
+Agent 0 took too long to make a move! This is warning 2
+Agent 0 took too long to make a move! This is warning 3
+Agent 0 exceeded the maximum number of warnings: 3
+Red agent crashed
+recorded
+Blue team starts
+Time is up.
+Tie game!
+recorded
+Red team starts
+Time is up.
+The Red team wins by 19 points.
+recorded
+Blue team starts
+Time is up.
+The Red team wins by 1 points.
+recorded
+Red team starts
+Time is up.
+Tie game!
+recorded
+Blue team starts
+Time is up.
+The Red team wins by 19 points.
+recorded
+Blue team starts
+Time is up.
+Tie game!
+recorded
+Red team starts
+Time is up.
+The Red team wins by 11 points.
+recorded
+Blue team starts
+Time is up.
+Tie game!
+recorded
+Blue team starts
+Time is up.
+The Red team wins by 27 points.
+recorded
+Red team starts
+Time is up.
+The Red team wins by 6 points.
+recorded
+Red team starts
+Time is up.
+The Red team wins by 1 points.
+recorded
+Red team starts
+Time is up.
+The Red team wins by 5 points.
+recorded
+Blue team starts
+Time is up.
+The Red team wins by 15 points.
+recorded
+Average Score: 6.5285714285714285
+Scores:        0, 0, 0, 6, -1, 4, 6, 19, 5, 6, 14, 2, 0, 0, 11, -1, 3, 23, 0, 0, 3, 0, 2, 1, 4, 10, 26, 0, 0, 0, 4, 0, 17, 2, 11, 6, 24, 0, 0, 20, 0, 0, 3, 2, 0, 0, 5, 11, 14, 0, 19, -1, 28, 29, 17, 0, -1, 0, 19, 1, 0, 19, 0, 11, 0, 27, 6, 1, 5, 15
+Red Win Rate:  42/70 (0.60)
+Blue Win Rate: 4/70 (0.06)
+Record:        Tie, Tie, Tie, Red, Blue, Red, Red, Red, Red, Red, Red, Red, Tie, Tie, Red, Blue, Red, Red, Tie, Tie, Red, Tie, Red, Red, Red, Red, Red, Tie, Tie, Tie, Red, Tie, Red, Red, Red, Red, Red, Tie, Tie, Red, Tie, Tie, Red, Red, Tie, Tie, Red, Red, Red, Tie, Red, Blue, Red, Red, Red, Tie, Blue, Tie, Red, Red, Tie, Red, Tie, Red, Tie, Red, Red, Red, Red, Red
+
+Total Time Game: 661.0

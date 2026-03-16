@@ -1,0 +1,29 @@
+
+offensive_team := 'agents/analysis/ResearchTeams/OffensiveV2.py'
+
+# a team with two version 1 Reflex defenders
+[group('Defense experiment'), parallel]
+Defense_experiment: Reflex-Defense-V1 Reflex-Defense-V2
+
+[group('Defense experiment')]
+Reflex-Defense-V1:
+    {{python_interpreter}} {{default_exp_args}} \
+    -u defensiveV1 \
+    -r {{research_teams_dir}}OffensiveV2.py \
+    --red-name Offensive \
+    -b {{research_teams_dir}}DefensiveV1.py \
+    --blue-name Defensive-V1
+
+# a team with the two version 2 reflex defenders
+[group('Defense experiment')]
+Reflex-Defense-V2:
+    {{python_interpreter}} {{default_exp_args}} \
+    -u defensiveV2 \
+    -r {{research_teams_dir}}OffensiveV2.py \
+    --red-name Offensive \
+    -b {{research_teams_dir}}DefensiveV2.py \
+    --blue-name Defensive-V2
+
+
+
+
