@@ -388,7 +388,7 @@ class ReflexCaptureAgent(CaptureAgent):
         self.dead_ends = {}
         CaptureAgent.register_initial_state(self, game_state)
         self.compute_dead_ends()
-        
+
 
     def compute_dead_ends(self):
         # FIXME: move import
@@ -539,7 +539,12 @@ class DefensiveReflexAgent(ReflexCaptureAgent):
         defense_midfield_x = middle_x - middle_x // 2 if self.red else middle_x + middle_x // 2
         result = []
         maze_height = game_state.data.layout.height
-        for col in range(middle_x,defense_midfield_x):
+
+        blue_colrange = range(middle_x, defense_midfield_x)
+        red_colrange = range(defense_midfield_x, middle_x)
+        colrange = red_colrange if self.red else blue_colrange
+
+        for col in colrange:
             for row in range(1,maze_height - 1 ):
                 if pos_is_gate(row,col,game_state):
                    # self.debug_draw((col,row), (122,244,32))
@@ -584,7 +589,7 @@ class DefensiveReflexAgent(ReflexCaptureAgent):
         #     self.debug_draw(pos, (122,244,32))
         # for pos in midfield_pos:
         #     self.debug_draw(pos, (122,244,32))
-    
+
     def get_features(self, game_state, action):
         features = util.Counter()
         current_food = self.get_food_you_are_defending(game_state).as_list()
@@ -656,7 +661,7 @@ class DefensiveReflexAgent(ReflexCaptureAgent):
                 'reverse': -2,
                 'distance_to_last_eaten_food': -10,
                 'bottleneck_distance': -5}
-    
+
 class OffensiveReflexAgent(ReflexCaptureAgent):
     """
   A reflex agent that seeks food. This is an agent
@@ -716,7 +721,7 @@ class OffensiveReflexAgent(ReflexCaptureAgent):
 
         if state.is_pacman and closest_defender_dist <= 5:
             features['ghost_proximity'] = 10 - closest_defender_dist
-        
+
         features['score'] = self.get_score(successor)
         features['uneaten_food'] = len(food_list)
 
@@ -762,7 +767,7 @@ class OffensiveReflexAgent(ReflexCaptureAgent):
             features['reverse'] = count
 
         return features
-    
+
     def get_weights(self, game_state, action):
         return {'score': 100,
                    'uneaten_food': -100,
