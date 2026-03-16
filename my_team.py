@@ -32,7 +32,7 @@ from util import Queue
 #################
 
 def create_team(first_index, second_index, is_red,
-                first='MinimaxOffensiveAgent', second='DefensiveReflexAgent2', num_training=0):
+                first='OffensiveReflexAgent', second='DefensiveReflexAgent', num_training=0):
     """
     This function should return a list of two agents that will form the
     team, initialized using firstIndex and secondIndex as their agent
@@ -655,3 +655,163 @@ class DefensiveReflexAgent(ReflexCaptureAgent):
                 'reverse': -2,
                 'distance_to_last_eaten_food': -10,
                 'bottleneck_distance': -5}
+    
+class OffensiveReflexAgent(ReflexCaptureAgent):
+    """
+  A reflex agent that seeks food. This is an agent
+  we give you to get an idea of what an offensive agent might look like,
+  but it is by no means the best or only way to build an offensive agent.
+  """
+    def register_initial_state(self, game_state):
+        super().register_initial_state(game_state)
+        self.walls = game_state.get_walls()
+        self.dead_ends = {}
+        self.compute_dead_ends()
+        self.pos_history = []
+        self.pos_hist_len = 4
+
+    def compute_dead_ends(self):
+        # FIXME: move import
+        walls = self.walls
+        neighbours = {}
+        degree = {}
+
+        for x in range(walls.width):
+            for y in range(walls.height):
+                if walls[x][y]:
+                    continue
+                not_wall = (x, y)
+                list_of_neighbours = []
+                for dx, dy in [(1, 0), (0, 1), (-1, 0), (0, -1)]:
+                    newx, newy = x + dx, y + dy
+
+                    if not walls[newx][newy]:
+                        list_of_neighbours.append((newx, newy))
+
+                neighbours[not_wall] = list_of_neighbours
+                degree[not_wall] = len(list_of_neighbours)
+
+        queue = Queue()
+        for not_wall in degree:
+            if degree[not_wall] == 1:
+                queue.push(not_wall)
+                self.dead_ends[not_wall] = 1
+                self.debug_draw(not_wall, color=(1, 1, 1))
+
+        while not queue.is_empty():
+            not_wall = queue.pop()
+            for x in neighbours[not_wall]:
+                if x not in degree: continue
+                degree[x] -= 1
+
+                if degree[x] == 1 and x not in self.dead_ends:
+                    self.dead_ends[x] = self.dead_ends[not_wall] + 1
+                    queue.push(x)
+                    self.debug_draw(x, color=(1, 1, 1))    
+    def choose_action(self, game_state):
+        my_pos = game_state.get_agent_state(self.index).get_position()
+        state = game_state.get_agent_state(self.index)
+
+        if my_pos is not None:
+            self.pos_history.append(my_pos)
+            if len(self.pos_history) > self.pos_hist_len:
+                self.pos_history.pop(0)
+        return super().choose_action(game_state)
+    def get_features(self, game_state, action):
+        features = util.Counter()
+        successor = self.get_successor(game_state, action)
+        food_list = self.get_food(successor).as_list()
+        radius = 2
+        # ------- compute_clusters START
+        clusters = []
+        for food in food_list:
+            count = 0
+            for rest_food in food_list:
+                if self.get_maze_distance(food, rest_food) <= radius:
+                    count += 1
+            clusters.append((food, count))
+        # -------- compute_clusters END
+        best_food = None
+        best_cluster_size = 0
+
+        for food, size in clusters:
+            if size > best_cluster_size:
+                best_cluster_size = size
+                best_food = food
+
+        state = successor.get_agent_state(self.index)
+        my_pos = state.get_position()
+        if my_pos is None:
+            return features
+        enemies = [successor.get_agent_state(i) for i in self.get_opponents(successor)]
+        defenders = [a for a in enemies if not a.is_pacman and a.get_position() is not None]
+        active_defenders = [a for a in defenders if a.scared_timer == 0]
+        scared_defenders = [a for a in defenders if a.scared_timer > 0]
+        is_chased = False
+        closest_defender_dist = float('inf')
+        if active_defenders:
+            defender_dists = [self.get_maze_distance(my_pos, a.get_position()) for a in active_defenders]
+            closest_defender_dist = min(defender_dists)
+            is_chased = closest_defender_dist <= 5
+
+        if state.is_pacman and closest_defender_dist <= 5:
+            features['ghost_proximity'] = 10 - closest_defender_dist
+        
+        features['score'] = self.get_score(successor)
+        features['uneaten_food'] = len(food_list)
+
+        if best_food is not None:
+            distance = self.get_maze_distance(my_pos, best_food)
+            features['distance_to_cluster'] = distance
+            features['cluster_size'] = best_cluster_size
+
+        if scared_defenders:
+            min_scared_timer = min(a.scared_timer for a in scared_defenders)
+            if min_scared_timer >= 5:
+                features['return_home'] = 0
+                features['dead_end'] = 0
+                scared_dists = [self.get_maze_distance(my_pos, a.get_position()) for a in scared_defenders]
+                features['dist_to_scared_defender'] = min(scared_dists)
+        else:
+            carrying = state.num_carrying
+            distance_to_home = self.get_maze_distance(my_pos, self.start)
+            time_left = successor.data.timeleft
+            time = 1200
+            urgency = 1 - time_left / time
+            if is_chased:
+                capsules = self.get_capsules(successor)
+                if capsules:
+                    capsule_dists = [self.get_maze_distance(my_pos, capsule) for capsule in capsules]
+                    features['dist_to_capsule'] = min(capsule_dists)
+                else:
+                    features['return_home'] = carrying * distance_to_home * urgency * 5
+            else:
+                features['return_home'] = carrying * distance_to_home * urgency
+
+        if active_defenders:
+            for defender in active_defenders:
+                defender_pos = defender.get_position()
+                if my_pos == defender_pos: features['walk_into_defender'] = 1
+        if my_pos in self.dead_ends:
+            depth = self.dead_ends[my_pos]
+            if closest_defender_dist <= depth * 2:
+                features['dead_end'] = 1
+
+        if self.pos_history:
+            count = self.pos_history.count(my_pos)
+            features['reverse'] = count
+
+        return features
+    
+    def get_weights(self, game_state, action):
+        return {'score': 100,
+                   'uneaten_food': -100,
+                   'distance_to_cluster': -1,
+                   'cluster_size': 1,
+                   'return_home': -1,
+                   'dead_end': -75,
+                   'reverse': 0,
+                   'ghost_proximity': -10,
+                   'dist_to_capsule': -10,
+                   'walk_into_defender': -100,
+                   'dist_to_scared_defender': -15}
