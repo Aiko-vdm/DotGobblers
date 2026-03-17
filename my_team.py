@@ -735,8 +735,14 @@ class OffensiveReflexAgent(ReflexCaptureAgent):
             if min_scared_timer >= 5:
                 features['return_home'] = 0
                 features['dead_end'] = 0
-                scared_dists = [self.get_maze_distance(my_pos, a.get_position()) for a in scared_defenders]
-                features['dist_to_scared_defender'] = min(scared_dists)
+                prev_enemies = [game_state.get_agent_state(i) for i in self.get_opponents(game_state)]
+                prev_scared = [a for a in prev_enemies if not a.is_pacman and a.scared_timer > 0 and a.get_position() is not None]
+                prev_scared_positions = [a.get_position() for a in prev_scared]
+                if my_pos in prev_scared_positions:
+                    features['ate_scared_ghost'] = 1
+                else: 
+                    scared_dists = [self.get_maze_distance(my_pos, a.get_position()) for a in scared_defenders]
+                    features['dist_to_scared_defender'] = min(scared_dists)
         else:
             carrying = state.num_carrying
             distance_to_home = self.get_maze_distance(my_pos, self.start)
@@ -779,4 +785,5 @@ class OffensiveReflexAgent(ReflexCaptureAgent):
                    'ghost_proximity': -10,
                    'dist_to_capsule': -10,
                    'walk_into_defender': -100,
-                   'dist_to_scared_defender': -15}
+                   'dist_to_scared_defender': -5,
+                   'ate_scared_ghost': 10}
