@@ -1,0 +1,32 @@
+# Reflex3 is the new offensive and new defensive
+[group('submission'), parallel]
+submission-exp: ReflexV3-vs-MinimaxV2 Minimax_NewDefence-vs-MinimaxV2 NewOffensive_OldDefensive-vs-MinimaxV2
+
+[group('submission')]
+ReflexV3-vs-MinimaxV2:
+    {{python_interpreter}} {{default_exp_args}} \
+    -u ReflexV3-vs-MinimaxV2 \
+    -r {{research_teams_dir}}MinimaxV2.py \
+    --red-name MinimaxV2 \
+    -b {{research_teams_dir}}ReflexV3.py \
+    --blue-name ReflexV3
+
+[group('submission')]
+Minimax_NewDefence-vs-MinimaxV2:
+    {{python_interpreter}} {{default_exp_args}} \
+    -u Minimax_NewDefence-vs-MinimaxV2 \
+    -r {{research_teams_dir}}MinimaxV2.py \
+    --red-name MinimaxV2 \
+    -b {{research_teams_dir}}Minimax_NewDefensive.py \
+    --blue-name Minimax_NewDefensive
+
+[group('submission')]
+NewOffensive_OldDefensive-vs-MinimaxV2:
+    {{python_interpreter}} {{default_exp_args}} \
+    -u NewOffensive_OldDefensive-vs-MinimaxV2 \
+    -r {{research_teams_dir}}MinimaxV2.py \
+    --red-name MinimaxV2 \
+    -b {{research_teams_dir}}NewOffensive_OldDefensive.py \
+    --blue-name NewOffensvie_OldDefensive
+
+
