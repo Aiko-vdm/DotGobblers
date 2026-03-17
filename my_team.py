@@ -747,6 +747,7 @@ class OffensiveReflexAgent(ReflexCaptureAgent):
         my_pos = state.get_position()
         if my_pos is None:
             return features
+        prev_pos = game_state.get_agent_state(self.index).get_position()
         enemies = [successor.get_agent_state(i) for i in self.get_opponents(successor)]
         defenders = [a for a in enemies if not a.is_pacman and a.get_position() is not None]
         active_defenders = [a for a in defenders if a.scared_timer == 0]
@@ -760,6 +761,9 @@ class OffensiveReflexAgent(ReflexCaptureAgent):
 
         if state.is_pacman and closest_defender_dist <= 5:
             features['ghost_proximity'] = 10 - closest_defender_dist
+
+        if my_pos == self.start and prev_pos != self.start:
+            features['dont_die'] = 1
 
         features['score'] = self.get_score(successor)
         features['uneaten_food'] = len(food_list)
@@ -825,4 +829,5 @@ class OffensiveReflexAgent(ReflexCaptureAgent):
                    'dist_to_capsule': -10,
                    'walk_into_defender': -100,
                    'dist_to_scared_defender': -5,
-                   'ate_scared_ghost': 10}
+                   'ate_scared_ghost': 5,
+                   'dont_die': -1000}
