@@ -668,7 +668,7 @@ class DefensiveReflexAgent(ReflexCaptureAgent):
                 'stop': -100,
                 'reverse': -2,
                 'distance_to_last_eaten_food': -10,
-                'bottleneck_distance': -5}
+                'bottleneck_distance': -5,
                 'dist_to_capsule': -15,
                 'capsules': 10000}
 
