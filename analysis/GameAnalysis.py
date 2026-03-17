@@ -4,6 +4,7 @@ import json
 import time
 import seaborn as sns
 import numpy as np
+import matplotlib.pyplot as plt
 
 
 class GameAnalysis:
@@ -79,5 +80,7 @@ class GameAnalysis:
             hue='team',
             palette='muted')
             .set(title=f"{self.experiment_name}".replace("VS", " VS ")))
+        #TODO: set dynamically to amount of games in the game dataframe
+        plt.ylim(0, 70)
 
         return plot
