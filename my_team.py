@@ -659,16 +659,16 @@ class DefensiveReflexAgent(ReflexCaptureAgent):
                 return True
             else:
                 return False
-        invader_distance_w = -1000 if not is_scared() else 50
+        invader_distance_w = -10 if not is_scared() else 5
         trapped_invader_distance_w = -100 if not is_scared() else 50
         return {'num_invaders': -1000,
                 'on_defense': 100,
                 'invader_distance': invader_distance_w,
-                #'trapped_invader_distance': trapped_invader_distance_w,
+                'trapped_invader_distance': trapped_invader_distance_w,
                 'stop': -100,
                 'reverse': -2,
-                'distance_to_last_eaten_food': -20,
-                'bottleneck_distance': -5,
+                'distance_to_last_eaten_food': -10,
+                'bottleneck_distance': -5}
                 'dist_to_capsule': -15,
                 'capsules': 10000}
 
@@ -775,17 +775,10 @@ class OffensiveReflexAgent(ReflexCaptureAgent):
         if self.pos_history:
             count = self.pos_history.count(my_pos)
             features['reverse'] = count
-        enemy_dist = [util.manhattan_distance(my_pos, enemy.get_position()) for enemy in enemies if enemy.get_position() is not None]
-        closest_enemy = min(enemy_dist) if enemy_dist else float('inf')
-        if not state.is_pacman and closest_enemy <= 5:
-            features['enemy_dist_on_defense'] = closest_enemy
-
 
         return features
 
     def get_weights(self, game_state, action):
-        agent_state = game_state.get_agent_state(self.index)
-        enemy_dist_on_def_w = -1000 if not agent_state.is_pacman and agent_state.scared_timer == 0 else 0
         return {'score': 100,
                    'uneaten_food': -100,
                    'distance_to_cluster': -1,
@@ -796,5 +789,4 @@ class OffensiveReflexAgent(ReflexCaptureAgent):
                    'ghost_proximity': -10,
                    'dist_to_capsule': -10,
                    'walk_into_defender': -100,
-                   'dist_to_scared_defender': -15,
-                    'enemy_dist_on_defense': enemy_dist_on_def_w}
+                   'dist_to_scared_defender': -15}
