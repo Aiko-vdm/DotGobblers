@@ -389,7 +389,7 @@ class ReflexCaptureAgent(CaptureAgent):
         CaptureAgent.register_initial_state(self, game_state)
         self.compute_dead_ends()
 
-
+    #TODO: Consider set implementation (membership check in O(1) )
     def compute_dead_ends(self):
         # FIXME: move import
         walls = self.walls
@@ -523,7 +523,7 @@ class DefensiveReflexAgent(ReflexCaptureAgent):
                 self.debug_draw(bottleneck, color=(158,224,32))
         # easier to comment out in one line
         draw_bottlenecks()
-
+    #TODO: exclude from computed clusters
     def find_bottlenecks(self, game_state):
         def pos_is_gate(row,col,game_state):
             if all([not game_state.has_wall(col, row),
