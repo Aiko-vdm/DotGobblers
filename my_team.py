@@ -833,7 +833,7 @@ class OffensiveReflexAgent(ReflexCaptureAgent):
                    'ghost_proximity': -10,
                    'dist_to_capsule': -10,
                    'walk_into_defender': -100,
-                   'dist_to_scared_defender': -5,
+                   'dist_to_scared_defender': -1,
                    'ate_scared_ghost': 5,
                    'dont_die': -1000,
                    'steps_on_own_half': -1}
