@@ -536,7 +536,7 @@ class DefensiveReflexAgent(ReflexCaptureAgent):
                 return False
 
         middle_x = (game_state.data.layout.width - 1) // 2 if self.red else game_state.data.layout.width // 2
-        defense_midfield_x = middle_x - middle_x // 2 if self.red else middle_x + middle_x // 2
+        defense_midfield_x = middle_x - middle_x // 4 if self.red else middle_x + middle_x // 4
         result = []
         maze_height = game_state.data.layout.height
 
