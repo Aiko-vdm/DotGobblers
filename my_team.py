@@ -673,6 +673,7 @@ class OffensiveReflexAgent(ReflexCaptureAgent):
         super().register_initial_state(game_state)
         self.pos_history = []
         self.pos_hist_len = 4
+        self.steps_on_own_half = 0
 
     def dijkstra_distance(self, game_state, start, target, defenders, danger_radius=5, penalty_weight=10):
         # Skip Dijkstra if no active defenders/ defenders too far away
@@ -720,6 +721,9 @@ class OffensiveReflexAgent(ReflexCaptureAgent):
             self.pos_history.append(my_pos)
             if len(self.pos_history) > self.pos_hist_len:
                 self.pos_history.pop(0)
+        if not state.is_pacman:
+            self.steps_on_own_half += 1
+        else: self.steps_on_own_half = 0
         return super().choose_action(game_state)
     def get_features(self, game_state, action):
         features = util.Counter()
@@ -814,7 +818,8 @@ class OffensiveReflexAgent(ReflexCaptureAgent):
         if self.pos_history:
             count = self.pos_history.count(my_pos)
             features['reverse'] = count
-
+        if not state.is_pacman:
+            features['steps_on_own_half'] = self.steps_on_own_half
         return features
 
     def get_weights(self, game_state, action):
@@ -830,4 +835,5 @@ class OffensiveReflexAgent(ReflexCaptureAgent):
                    'walk_into_defender': -100,
                    'dist_to_scared_defender': -5,
                    'ate_scared_ghost': 5,
-                   'dont_die': -1000}
+                   'dont_die': -1000,
+                   'steps_on_own_half': -1}
