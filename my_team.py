@@ -27,6 +27,7 @@ from capture_agents import CaptureAgent
 from game import Directions
 from util import nearest_point
 from util import Queue
+from util import PriorityQueue
 #################
 # Team creation #
 #################
@@ -682,7 +683,46 @@ class OffensiveReflexAgent(ReflexCaptureAgent):
         super().register_initial_state(game_state)
         self.pos_history = []
         self.pos_hist_len = 4
+        self.steps_on_own_half = 0
 
+    def dijkstra_distance(self, game_state, start, target, defenders, danger_radius=5, penalty_weight=10):
+        # Skip Dijkstra if no active defenders/ defenders too far away
+        if not defenders: 
+            return self.get_maze_distance(start, target)
+        
+        min_defender_dist = min(self.get_maze_distance(start, defender.get_position()) for defender in defenders)
+        if min_defender_dist > danger_radius: 
+            return self.get_maze_distance(start, target)
+        
+        walls = game_state.get_walls()
+
+        def penalty(cell):
+            min_dist = min(self.get_maze_distance(cell, defender.get_position()) for defender in defenders)
+            return max(0, danger_radius - min_dist) * penalty_weight # simple function, the closer a defender, the worse (can be finetuned)
+
+        pq = PriorityQueue()
+        pq.push(start, 0)
+        visited = set()
+        costs = {start: 0}
+
+        #Start Dijkstra
+        while not pq.is_empty():
+            cell = pq.pop()
+            if cell in visited: continue
+            visited.add(cell)
+            if cell == target:
+                return costs[cell]
+            x, y = int(cell[0]), int(cell[1])
+            for dx, dy in [(1, 0), (0, 1), (-1, 0), (0, -1)]:
+                newx, newy = x + dx, y + dy
+                neighbour = (newx, newy)
+                if not walls[newx][newy] and neighbour not in visited:
+                    new_cost = costs[cell] + 1 + penalty(neighbour)
+                    if neighbour not in costs or new_cost < costs[neighbour]:
+                        costs[neighbour] = new_cost
+                        pq.update(neighbour, new_cost)
+        return float('inf') #safety fallback, when the entire pq has been exhausted w/o path to target
+    
     def choose_action(self, game_state):
         my_pos = game_state.get_agent_state(self.index).get_position()
         state = game_state.get_agent_state(self.index)
@@ -691,6 +731,9 @@ class OffensiveReflexAgent(ReflexCaptureAgent):
             self.pos_history.append(my_pos)
             if len(self.pos_history) > self.pos_hist_len:
                 self.pos_history.pop(0)
+        if not state.is_pacman:
+            self.steps_on_own_half += 1
+        else: self.steps_on_own_half = 0
         return super().choose_action(game_state)
     def get_features(self, game_state, action):
         features = util.Counter()
@@ -718,6 +761,7 @@ class OffensiveReflexAgent(ReflexCaptureAgent):
         my_pos = state.get_position()
         if my_pos is None:
             return features
+        prev_pos = game_state.get_agent_state(self.index).get_position()
         enemies = [successor.get_agent_state(i) for i in self.get_opponents(successor)]
         defenders = [a for a in enemies if not a.is_pacman and a.get_position() is not None]
         active_defenders = [a for a in defenders if a.scared_timer == 0]
@@ -732,11 +776,14 @@ class OffensiveReflexAgent(ReflexCaptureAgent):
         if state.is_pacman and closest_defender_dist <= 5:
             features['ghost_proximity'] = 10 - closest_defender_dist
 
+        if my_pos == self.start and prev_pos != self.start:
+            features['dont_die'] = 1
+
         features['score'] = self.get_score(successor)
         features['uneaten_food'] = len(food_list)
 
         if best_food is not None:
-            distance = self.get_maze_distance(my_pos, best_food)
+            distance = self.dijkstra_distance(successor, my_pos, best_food, active_defenders)
             features['distance_to_cluster'] = distance
             features['cluster_size'] = best_cluster_size
 
@@ -745,8 +792,14 @@ class OffensiveReflexAgent(ReflexCaptureAgent):
             if min_scared_timer >= 5:
                 features['return_home'] = 0
                 features['dead_end'] = 0
-                scared_dists = [self.get_maze_distance(my_pos, a.get_position()) for a in scared_defenders]
-                features['dist_to_scared_defender'] = min(scared_dists)
+                prev_enemies = [game_state.get_agent_state(i) for i in self.get_opponents(game_state)]
+                prev_scared = [a for a in prev_enemies if not a.is_pacman and a.scared_timer > 0 and a.get_position() is not None]
+                prev_scared_positions = [a.get_position() for a in prev_scared]
+                if my_pos in prev_scared_positions:
+                    features['ate_scared_ghost'] = 1
+                else: 
+                    scared_dists = [self.get_maze_distance(my_pos, a.get_position()) for a in scared_defenders]
+                    features['dist_to_scared_defender'] = min(scared_dists)
         else:
             carrying = state.num_carrying
             distance_to_home = self.get_maze_distance(my_pos, self.start)
@@ -756,7 +809,7 @@ class OffensiveReflexAgent(ReflexCaptureAgent):
             if is_chased:
                 capsules = self.get_capsules(successor)
                 if capsules:
-                    capsule_dists = [self.get_maze_distance(my_pos, capsule) for capsule in capsules]
+                    capsule_dists = [self.dijkstra_distance(successor,my_pos,capsule,active_defenders) for capsule in capsules]
                     features['dist_to_capsule'] = min(capsule_dists)
                 else:
                     features['return_home'] = carrying * distance_to_home * urgency * 5
@@ -775,7 +828,8 @@ class OffensiveReflexAgent(ReflexCaptureAgent):
         if self.pos_history:
             count = self.pos_history.count(my_pos)
             features['reverse'] = count
-
+        if not state.is_pacman:
+            features['steps_on_own_half'] = self.steps_on_own_half
         return features
 
     def get_weights(self, game_state, action):
@@ -789,4 +843,7 @@ class OffensiveReflexAgent(ReflexCaptureAgent):
                    'ghost_proximity': -10,
                    'dist_to_capsule': -10,
                    'walk_into_defender': -100,
-                   'dist_to_scared_defender': -15}
+                   'dist_to_scared_defender': -1,
+                   'ate_scared_ghost': 5,
+                   'dont_die': -1000,
+                   'steps_on_own_half': -1}
