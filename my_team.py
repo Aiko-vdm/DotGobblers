@@ -659,8 +659,8 @@ class DefensiveReflexAgent(ReflexCaptureAgent):
                 return True
             else:
                 return False
-        invader_distance_w = -10 if not is_scared() else 5
-        trapped_invader_distance_w = -100 if not is_scared() else 50
+        invader_distance_w = -100 if not is_scared() else 5
+        trapped_invader_distance_w = -150 if not is_scared() else 50
         return {'num_invaders': -1000,
                 'on_defense': 100,
                 'invader_distance': invader_distance_w,
