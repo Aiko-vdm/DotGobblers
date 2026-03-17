@@ -536,7 +536,7 @@ class DefensiveReflexAgent(ReflexCaptureAgent):
                 return False
 
         middle_x = (game_state.data.layout.width - 1) // 2 if self.red else game_state.data.layout.width // 2
-        defense_midfield_x = middle_x - middle_x // 2 if self.red else middle_x + middle_x // 2
+        defense_midfield_x = middle_x - middle_x // 4 if self.red else middle_x + middle_x // 4
         result = []
         maze_height = game_state.data.layout.height
 
@@ -642,7 +642,15 @@ class DefensiveReflexAgent(ReflexCaptureAgent):
         #distance to a bottleneck
         bottleneck_dist = [self.get_maze_distance(my_pos, bottleneck) for bottleneck in self.bottleneck_positions]
         features['bottleneck_distance'] = min(bottleneck_dist)
+        #FIXME: Code duplication with offensive reflex
+        capsules = self.get_capsules_you_are_defending(game_state)
+        if capsules:
+            features['capsules'] = len(capsules)
+            capsule_dists = [self.get_maze_distance(my_pos, capsule) for capsule in capsules]
+            features['dist_to_capsule'] = max(capsule_dists)
 
+
+        #TODO: succesor_score feature and its weight from super are overwritten
         return features
 
     def get_weights(self, game_state, action):
@@ -651,8 +659,8 @@ class DefensiveReflexAgent(ReflexCaptureAgent):
                 return True
             else:
                 return False
-        invader_distance_w = -10 if not is_scared() else 5
-        trapped_invader_distance_w = -100 if not is_scared() else 50
+        invader_distance_w = -100 if not is_scared() else 5
+        trapped_invader_distance_w = -150 if not is_scared() else 50
         return {'num_invaders': -1000,
                 'on_defense': 100,
                 'invader_distance': invader_distance_w,
@@ -660,7 +668,9 @@ class DefensiveReflexAgent(ReflexCaptureAgent):
                 'stop': -100,
                 'reverse': -2,
                 'distance_to_last_eaten_food': -10,
-                'bottleneck_distance': -5}
+                'bottleneck_distance': -5,
+                'dist_to_capsule': -15,
+                'capsules': 10000}
 
 class OffensiveReflexAgent(ReflexCaptureAgent):
     """
