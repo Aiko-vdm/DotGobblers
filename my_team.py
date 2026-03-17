@@ -642,7 +642,15 @@ class DefensiveReflexAgent(ReflexCaptureAgent):
         #distance to a bottleneck
         bottleneck_dist = [self.get_maze_distance(my_pos, bottleneck) for bottleneck in self.bottleneck_positions]
         features['bottleneck_distance'] = min(bottleneck_dist)
+        #FIXME: Code duplication with offensive reflex
+        capsules = self.get_capsules_you_are_defending(game_state)
+        if capsules:
+            features['capsules'] = len(capsules)
+            capsule_dists = [self.get_maze_distance(my_pos, capsule) for capsule in capsules]
+            features['dist_to_capsule'] = max(capsule_dists)
 
+
+        #TODO: succesor_score feature and its weight from super are overwritten
         return features
 
     def get_weights(self, game_state, action):
@@ -661,6 +669,8 @@ class DefensiveReflexAgent(ReflexCaptureAgent):
                 'reverse': -2,
                 'distance_to_last_eaten_food': -10,
                 'bottleneck_distance': -5}
+                'dist_to_capsule': -15,
+                'capsules': 10000}
 
 class OffensiveReflexAgent(ReflexCaptureAgent):
     """
