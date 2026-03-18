@@ -590,7 +590,23 @@ class DefensiveReflexAgent(ReflexCaptureAgent):
         #     self.debug_draw(pos, (122,244,32))
         # for pos in midfield_pos:
         #     self.debug_draw(pos, (122,244,32))
+    def get_food_close_to_border(self, game_state):
+        food_list = self.get_food(game_state).as_list()
+        middle_x = (game_state.data.layout.width - 1) // 2 if self.red else game_state.data.layout.width // 2
+        food_with_dist = []
+        for food in food_list:
+            dist = abs(food[0] - middle_x)
+            food_with_dist.append((dist, food))
+        food_with_dist.sort()
+        return [food for _, food in food_with_dist]
 
+    def get_border_dist(self, game_state, pos):
+        middle_x = (game_state.data.layout.width - 1) // 2 if self.red else game_state.data.layout.width // 2
+        height = game_state.data.layout.height
+        border_cells = [(middle_x, y) for y in range(height-1) if not game_state.has_wall(middle_x,y)]
+        if not border_cells: return 0
+        return min(self.get_maze_distance(pos, bc) for bc in border_cells)
+    
     def get_features(self, game_state, action):
         features = util.Counter()
         current_food = self.get_food_you_are_defending(game_state).as_list()
@@ -615,40 +631,67 @@ class DefensiveReflexAgent(ReflexCaptureAgent):
 
         my_state = successor.get_agent_state(self.index)
         my_pos = my_state.get_position()
+        scared_timer = game_state.get_agent_state(self.index).scared_timer
+        is_scared = scared_timer > 0
 
-        # Computes whether we're on defense (1) or offense (0)
-        # TODO: check if still useful
-        features['on_defense'] = 1
-        if my_state.is_pacman: features['on_defense'] = 0
+        retreat_threshold = scared_timer <= self.get_border_dist(game_state, my_pos)
+        if is_scared: 
+            enemies = [successor.get_agent_state(i) for i in self.get_opponents(successor)]
+            defenders = [a for a in enemies if not a.is_pacman and a.get_position() is not None]
+            active_defenders = [a for a in defenders if a.scared_timer == 0]
+            is_chased = False
+            closest_defender_dist = float('inf')
+            carrying = successor.get_agent_state(self.index).num_carrying
+            if active_defenders:
+                defender_dists = [self.get_maze_distance(my_pos, a.get_position()) for a in active_defenders]
+                closest_defender_dist = min(defender_dists)
+                is_chased = closest_defender_dist <= 5
+            prev_pos = game_state.get_agent_state(self.index).get_position()
+            if my_pos == self.start and prev_pos != self.start:
+                features['dont_die'] = 1
+            if scared_timer > retreat_threshold:
+                border_food = self.get_food_close_to_border(game_state)
+                if border_food:
+                    dists = [self.get_maze_distance(my_pos, food) for food in border_food]
+                    features['raid_food_dist'] = min(dists)
+                if is_chased:
+                    features['return_home'] = self.get_border_dist(game_state, my_pos)
+            else: 
+                features['return_home'] = self.get_border_dist(game_state, my_pos) 
+        else: 
+            # Computes whether we're on defense (1) or offense (0)
+            # TODO: check if still useful
+            features['on_defense'] = 1
+            if my_state.is_pacman: features['on_defense'] = 0
 
-        # Computes distance to invaders we can see
-        enemies = [successor.get_agent_state(i) for i in self.get_opponents(successor)]
-        invaders = [a for a in enemies if a.is_pacman and a.get_position() is not None]
-        features['num_invaders'] = len(invaders)
-        if len(invaders) > 0:
-            dists = [self.get_maze_distance(my_pos, a.get_position()) for a in invaders]
-            features['invader_distance'] = min(dists)
-            # Of those we see, how many are trapped in dead ends
-            dist_trapped = [self.get_maze_distance(my_pos, a.get_position()) for a in enemies if a in self.dead_ends]
-            features['trapped_invader_distance'] = min(dist_trapped) if len(dist_trapped) > 0 else 0
+            # Computes distance to invaders we can see
+            enemies = [successor.get_agent_state(i) for i in self.get_opponents(successor)]
+            invaders = [a for a in enemies if a.is_pacman and a.get_position() is not None]
+            features['num_invaders'] = len(invaders)
+            if len(invaders) > 0:
+                dists = [self.get_maze_distance(my_pos, a.get_position()) for a in invaders]
+                features['invader_distance'] = min(dists)
+                # Of those we see, how many are trapped in dead ends
+                dist_trapped = [self.get_maze_distance(my_pos, a.get_position()) for a in enemies if a in self.dead_ends]
+                features['trapped_invader_distance'] = min(dist_trapped) if len(dist_trapped) > 0 else 0
 
-        if action == Directions.STOP: features['stop'] = 1
-        rev = Directions.REVERSE[game_state.get_agent_state(self.index).configuration.direction]
-        if action == rev: features['reverse'] = 1
+            if action == Directions.STOP: features['stop'] = 1
+            rev = Directions.REVERSE[game_state.get_agent_state(self.index).configuration.direction]
+            if action == rev: features['reverse'] = 1
 
-        if len(invaders) == 0 and self.last_eaten_food is not None:
-            dist = self.get_maze_distance(my_pos, self.last_eaten_food)
-            features['distance_to_last_eaten_food'] = dist
+            if len(invaders) == 0 and self.last_eaten_food is not None:
+                dist = self.get_maze_distance(my_pos, self.last_eaten_food)
+                features['distance_to_last_eaten_food'] = dist
 
-        #distance to a bottleneck
-        bottleneck_dist = [self.get_maze_distance(my_pos, bottleneck) for bottleneck in self.bottleneck_positions]
-        features['bottleneck_distance'] = min(bottleneck_dist)
-        #FIXME: Code duplication with offensive reflex
-        capsules = self.get_capsules_you_are_defending(game_state)
-        if capsules:
-            features['capsules'] = len(capsules)
-            capsule_dists = [self.get_maze_distance(my_pos, capsule) for capsule in capsules]
-            features['dist_to_capsule'] = max(capsule_dists)
+            #distance to a bottleneck
+            bottleneck_dist = [self.get_maze_distance(my_pos, bottleneck) for bottleneck in self.bottleneck_positions]
+            features['bottleneck_distance'] = min(bottleneck_dist)
+            #FIXME: Code duplication with offensive reflex
+            capsules = self.get_capsules_you_are_defending(game_state)
+            if capsules:
+                features['capsules'] = len(capsules)
+                capsule_dists = [self.get_maze_distance(my_pos, capsule) for capsule in capsules]
+                features['dist_to_capsule'] = max(capsule_dists)
 
 
         #TODO: succesor_score feature and its weight from super are overwritten
@@ -660,12 +703,18 @@ class DefensiveReflexAgent(ReflexCaptureAgent):
                 return True
             else:
                 return False
+        if is_scared():
+            return {'invader_distance': 5,
+                    'trapped_invader_distance': 50,
+                    'raid_food_dist': -10,
+                    'return_home': -100,
+                    'dont_die': -100}
         invader_distance_w = -100 if not is_scared() else 5
         trapped_invader_distance_w = -150 if not is_scared() else 50
         return {'num_invaders': -1000,
                 'on_defense': 100,
-                'invader_distance': invader_distance_w,
-                'trapped_invader_distance': trapped_invader_distance_w,
+                'invader_distance': -100,
+                'trapped_invader_distance': -150,
                 'stop': -100,
                 'reverse': -2,
                 'distance_to_last_eaten_food': -10,
