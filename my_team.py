@@ -718,6 +718,10 @@ class OffensiveReflexAgent(ReflexCaptureAgent):
 
 
     def dijkstra_distance(self, game_state, start, target, defenders, danger_radius=5, penalty_weight=10):
+        """
+        Adaptatie van dijkstra's algoritme, in plaats van kortste pad, geef inschatting van hoe veilig een pad is naar target,
+        rekening houdend met de posities van de actieve defenders.
+        """
         # Skip Dijkstra if no active defenders/ defenders too far away
         if not defenders: 
             return self.get_maze_distance(start, target)
