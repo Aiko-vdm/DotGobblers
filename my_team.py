@@ -689,6 +689,33 @@ class OffensiveReflexAgent(ReflexCaptureAgent):
         self.pos_history = []
         self.pos_hist_len = 4
         self.steps_on_own_half = 0
+        self.home_positions = self._compute_home_positions(game_state)
+
+    def _compute_home_positions(self, game_state):
+        """
+        Deze hulpprocedure berekent posities waar de agent terug naar home-base kan gaan.
+        Wordt in de register_initial_state gerund en opgeslagen als een lijst.
+        """
+        layout = game_state.data.layout
+        # TODO: Dit is een iets properdere versie dan wat ik voordien in de defensive agent heb gedaan.
+        #       Misschien daar ook aanpassen zodat het wat cleaner leest/oogt
+        # kolom vanaf waar we technisch gezien "home" zijn, afhankelijk van team.
+        home_x = (layout.width - 1) // 2 if self.red else layout.width // 2
+        #TODO: implementatie als een set in plaats van lijst voor snellere membership acces? Zou normaal toch geen duplicate coördinaten moeten bevatten
+        return [
+            (home_x, y)
+            # de effectief bewandelbare maze rij-coördinaten zijn tussen 1 en de layout-hoogte -1 want muren aan de randen
+            for y in range(1, layout.height - 1)
+            if not game_state.has_wall(home_x, y)
+        ]
+
+    def _distance_to_home_position(self, pos):
+        """
+        interne hulpprocedure die gegeven home_positions de kortste afstand vindt naar home.
+        Neemt positie tuple en geeft een afstand terug.
+        """
+        return min(self.get_maze_distance(pos, home_pos) for home_pos in self.home_positions)
+
 
     def dijkstra_distance(self, game_state, start, target, defenders, danger_radius=5, penalty_weight=10):
         # Skip Dijkstra if no active defenders/ defenders too far away
