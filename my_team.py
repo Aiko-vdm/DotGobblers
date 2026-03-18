@@ -819,16 +819,24 @@ class OffensiveReflexAgent(ReflexCaptureAgent):
 
         prev_pos = game_state.get_agent_state(self.index).get_position()
         enemies = [successor.get_agent_state(i) for i in self.get_opponents(successor)]
+        # defenders zijn tegenstanders aan de overkant die hun food verdedigen
         defenders = [a for a in enemies if not a.is_pacman and a.get_position() is not None]
         active_defenders = [a for a in defenders if a.scared_timer == 0]
         scared_defenders = [a for a in defenders if a.scared_timer > 0]
+        # bijhouden van invaders: als we onderweg zijn naar de overkant, willen we soms een vijand onderweg capturen
+        invaders = [a for a in enemies if a.is_pacman and a.get_position() is not None]
+
+        # we zijn chased als er actieve defenders zijn in onze directe observeerbare radius (zij zien ons)
         is_chased = False
         closest_defender_dist = float('inf')
         if active_defenders:
+            #TODO: we gebruiken hier maze distance, maar observeerbaarheid hangt af van manhattan distance
+            #      het kan zijn dat de maze distance hier tekkortschiet, enemies kunnen ons al eerder zien en beginnen chasen?
             defender_dists = [self.get_maze_distance(my_pos, a.get_position()) for a in active_defenders]
             closest_defender_dist = min(defender_dists)
             is_chased = closest_defender_dist <= 5
 
+        #TODO: document reasoning voor 5 en 10
         if state.is_pacman and closest_defender_dist <= 5:
             features['ghost_proximity'] = 10 - closest_defender_dist
 
@@ -885,7 +893,7 @@ class OffensiveReflexAgent(ReflexCaptureAgent):
                 prev_scared_positions = [a.get_position() for a in prev_scared]
                 if my_pos in prev_scared_positions:
                     features['ate_scared_ghost'] = 1
-                else: 
+                else:
                     scared_dists = [self.get_maze_distance(my_pos, a.get_position()) for a in scared_defenders]
                     features['dist_to_scared_defender'] = min(scared_dists)
 
@@ -906,6 +914,12 @@ class OffensiveReflexAgent(ReflexCaptureAgent):
 
         if not state.is_pacman:
             features['steps_on_own_half'] = self.steps_on_own_half
+            if invaders:
+                invader_distances = [self.get_maze_distance(my_pos, a.get_position()) for a in invaders]
+                min_invader_dist = min(invader_distances)
+                if min_invader_dist <= 3:
+                    features['close_invader_distance'] = min_invader_dist
+
         return features
 
     def get_weights(self, game_state, action):
@@ -921,7 +935,8 @@ class OffensiveReflexAgent(ReflexCaptureAgent):
                    'dist_to_capsule': -18,
                    'capsule_pressure': 35,
                    'walk_into_defender': -100,
-                   'dist_to_scared_defender': -1,
+                   'dist_to_scared_defender': -2,
                    'ate_scared_ghost': 5,
                    'dont_die': -1000,
-                   'steps_on_own_half': -1}
+                   'steps_on_own_half': -3,
+                   'close_invader_distance': -12}
