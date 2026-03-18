@@ -877,7 +877,7 @@ class OffensiveReflexAgent(ReflexCaptureAgent):
                 ]
                 if non_reverse:
                     return random.choice(non_reverse)
-                # else doomed want geen legale acties over
+               # FIXME: Else return random action whatsover? Beter om dood te gaan en opnieuw te beginnen dan te blijven in een sink-state?  
 
         # TODO: code duplicatie van parent, maar bovenstaande moet eerder gerund worden
         values = [self.evaluate(game_state, action) for action in legal_actions]
