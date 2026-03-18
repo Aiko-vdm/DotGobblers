@@ -734,6 +734,7 @@ class OffensiveReflexAgent(ReflexCaptureAgent):
 
     #TODO: Als in eigen regio & invader binnen kleine radius ->> chap die man
     def register_initial_state(self, game_state):
+        #FIXME: variabelen die in init kunnen mss in init
         super().register_initial_state(game_state)
         self.pos_history = []
         self.pos_hist_len = 4
@@ -802,15 +803,16 @@ class OffensiveReflexAgent(ReflexCaptureAgent):
     #TODO make private
     def dijkstra_distance(self, game_state, start, target, defenders, danger_radius=5, penalty_weight=10):
         """
-        Adaptatie van dijkstra's algoritme, in plaats van kortste pad, geef inschatting van hoe veilig een pad is naar target,
-        rekening houdend met de posities van de actieve defenders.
+        Adaptatie van dijkstra's algoritme, geef kortste afstand tot een target tenzij er (gevaarlijke) adversaries zijn: penaliseer in dat geval paden
+        die gevaarlijk zijn door een aangepaste afstand.
         """
         # Skip Dijkstra if no active defenders/ defenders too far away
         if not defenders: 
             return self.get_maze_distance(start, target)
         
         min_defender_dist = min(self.get_maze_distance(start, defender.get_position()) for defender in defenders)
-        if min_defender_dist > danger_radius: 
+        if min_defender_dist > danger_radius:
+            #TODO: zie opmerking als elders: zijn we in danger vanaf een manhatten distance kleiner of gelijk aan 5?
             return self.get_maze_distance(start, target)
         
         walls = game_state.get_walls()
