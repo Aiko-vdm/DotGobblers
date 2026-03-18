@@ -689,6 +689,8 @@ class OffensiveReflexAgent(ReflexCaptureAgent):
         self.pos_history = []
         self.pos_hist_len = 4
         self.steps_on_own_half = 0
+        self.initial_timeleft = 1200
+        # bereken op voorhand de plekken waar we terug naar huis kunnen gaan
         self.home_positions = self._compute_home_positions(game_state)
 
     def _compute_home_positions(self, game_state):
@@ -748,7 +750,7 @@ class OffensiveReflexAgent(ReflexCaptureAgent):
                 best_cluster_size = size
 
         return best_food, best_cluster_size, best_cost
-
+    #TODO make private
     def dijkstra_distance(self, game_state, start, target, defenders, danger_radius=5, penalty_weight=10):
         """
         Adaptatie van dijkstra's algoritme, in plaats van kortste pad, geef inschatting van hoe veilig een pad is naar target,
@@ -846,10 +848,37 @@ class OffensiveReflexAgent(ReflexCaptureAgent):
             features['distance_to_cluster'] = best_cost #dijkstra safety cost
             features['cluster_size'] = best_cluster_size
 
+        carrying = state.num_carrying
+        time_left = successor.data.timeleft
+        # urgency vb: low urgency begin van spel → 1 - (1200/1200) = 0
+        # hoge urgency einde van spel → 1 - (400/1200) = 0.7 (1 is hoogste urgency)
+        urgency = 1 - (time_left / self.initial_timeleft)
+        # in mentaliteit van evaluatie ook te zien als maat voor "hoe snel kan ik food in cashen?"
+        distance_to_home = self._distance_to_home_position(my_pos)
+
+        # meer food in bezit + langere afstand verhogen druk voor return home
+        # urgency kan multipliceren tot x3
+        features['return_home'] = carrying * distance_to_home * (1 + (2 * urgency))
+        # finale sprint voor end game situatie ->> +8 als marge
+        if carrying > 0 and time_left <= distance_to_home + 8:
+            features['cash_in_now'] = 1
+
+        # capsules worden interessanter/belangrijker wanneer in chase of wanneer
+        # er meer voedsel in bezit is (hogere risico situatie)
+        capsules = self.get_capsules(successor)
+        if capsules:
+            capsule_dists = [self.dijkstra_distance(successor, my_pos, capsule, active_defenders) for capsule in capsules]
+            features['dist_to_capsule'] = min(capsule_dists)
+            if is_chased or carrying >= 4:
+                features['capsule_pressure'] = 1
+
+        # TODO: ter info: logica voor return home werd naar boven verplaatst, om return home
+        #       niet te veel te veel te laten afhangen van de tegenstander hun scared state.
+        #       lost hopelijk probleem op waar pacman iets te veel jaagde achter ghosts en zijn doel
+        #       van food te verzamelen te veel overrulede
         if scared_defenders:
             min_scared_timer = min(a.scared_timer for a in scared_defenders)
-            if min_scared_timer >= 5:
-                features['return_home'] = 0
+            if min_scared_timer >= 4:
                 features['dead_end'] = 0
                 prev_enemies = [game_state.get_agent_state(i) for i in self.get_opponents(game_state)]
                 prev_scared = [a for a in prev_enemies if not a.is_pacman and a.scared_timer > 0 and a.get_position() is not None]
@@ -859,21 +888,6 @@ class OffensiveReflexAgent(ReflexCaptureAgent):
                 else: 
                     scared_dists = [self.get_maze_distance(my_pos, a.get_position()) for a in scared_defenders]
                     features['dist_to_scared_defender'] = min(scared_dists)
-        else:
-            carrying = state.num_carrying
-            distance_to_home = self.get_maze_distance(my_pos, self.start)
-            time_left = successor.data.timeleft
-            time = 1200
-            urgency = 1 - time_left / time
-            if is_chased:
-                capsules = self.get_capsules(successor)
-                if capsules:
-                    capsule_dists = [self.dijkstra_distance(successor,my_pos,capsule,active_defenders) for capsule in capsules]
-                    features['dist_to_capsule'] = min(capsule_dists)
-                else:
-                    features['return_home'] = carrying * distance_to_home * urgency * 5
-            else:
-                features['return_home'] = carrying * distance_to_home * urgency
 
         if active_defenders:
             for defender in active_defenders:
@@ -899,11 +913,13 @@ class OffensiveReflexAgent(ReflexCaptureAgent):
                    'uneaten_food': -100,
                    'distance_to_cluster': -1,
                    'cluster_size': 1,
-                   'return_home': -1,
+                   'return_home': -4,
+                   'cash_in_now': 150,
                    'dead_end': -75,
                    'reverse': 0,
                    'ghost_proximity': -10,
-                   'dist_to_capsule': -10,
+                   'dist_to_capsule': -18,
+                   'capsule_pressure': 35,
                    'walk_into_defender': -100,
                    'dist_to_scared_defender': -1,
                    'ate_scared_ghost': 5,
