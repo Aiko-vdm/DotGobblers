@@ -551,7 +551,7 @@ class DefensiveReflexAgent(ReflexCaptureAgent):
                    # self.debug_draw((col,row), (122,244,32))
                     result.append((col, row))
         self.bottleneck_positions = result
-
+    #TODO: Delete?
     def find_high_traffic(self, game_state):
         agenda = util.Queue()
         closed = util.Counter()
@@ -598,6 +598,7 @@ class DefensiveReflexAgent(ReflexCaptureAgent):
         # code bellow checks if our food is eaten and returns the closest position for which this is the case
         eaten = set(self.previous_food) - set(current_food)
         if eaten:
+            #TODO: zie comment lijn 617
             pos = game_state.get_agent_state(self.index).get_position()
             min_dist = float('inf')
             closest = None
@@ -612,12 +613,12 @@ class DefensiveReflexAgent(ReflexCaptureAgent):
         self.previous_food = current_food
 
         successor = self.get_successor(game_state, action)
-
+        #TODO: onderstaande variabelen meermaals gebruikt doorheen code
         my_state = successor.get_agent_state(self.index)
         my_pos = my_state.get_position()
 
         # Computes whether we're on defense (1) or offense (0)
-        # TODO: check if still useful
+        # avoids to land in states where it becomes a pacman if on_defence = 1
         features['on_defense'] = 1
         if my_state.is_pacman: features['on_defense'] = 0
 
@@ -655,6 +656,7 @@ class DefensiveReflexAgent(ReflexCaptureAgent):
         return features
 
     def get_weights(self, game_state, action):
+        #TODO: zie in welke scope definieerbaar. Indien op andere plekken nuttig, hoger in de scope
         def is_scared():
             if game_state.get_agent_state(self.index).scared_timer > 0:
                 return True
@@ -679,6 +681,9 @@ class OffensiveReflexAgent(ReflexCaptureAgent):
   we give you to get an idea of what an offensive agent might look like,
   but it is by no means the best or only way to build an offensive agent.
   """
+    #TODO: reapeted moves van minimax (parent) porten naar hier
+    #TODO: scared ghost eten? ->> food eten priotiseren boven chase
+    #TODO: Als in eigen regio & invader binnen kleine radius ->> chap die man
     def register_initial_state(self, game_state):
         super().register_initial_state(game_state)
         self.pos_history = []
@@ -740,6 +745,8 @@ class OffensiveReflexAgent(ReflexCaptureAgent):
         successor = self.get_successor(game_state, action)
         food_list = self.get_food(successor).as_list()
         radius = 2
+        #TODO code duplicatie met defensive reflex
+
         # ------- compute_clusters START
         clusters = []
         for food in food_list:
