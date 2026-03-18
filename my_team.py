@@ -681,8 +681,7 @@ class OffensiveReflexAgent(ReflexCaptureAgent):
   we give you to get an idea of what an offensive agent might look like,
   but it is by no means the best or only way to build an offensive agent.
   """
-    #TODO: reapeted moves van minimax (parent) porten naar hier
-    #TODO: scared ghost eten? ->> food eten priotiseren boven chase
+
     #TODO: Als in eigen regio & invader binnen kleine radius ->> chap die man
     def register_initial_state(self, game_state):
         super().register_initial_state(game_state)
@@ -798,14 +797,59 @@ class OffensiveReflexAgent(ReflexCaptureAgent):
         state = game_state.get_agent_state(self.index)
 
         if my_pos is not None:
+            # record positie
             self.pos_history.append(my_pos)
+            # we houden slechts een bepaald aantal posities vast
             if len(self.pos_history) > self.pos_hist_len:
                 self.pos_history.pop(0)
+
+        # counter gebruikt om bij te houden hoe lang pacman aan zijn eigen kant gebruikt
+        # We willen een tradeoff hebben dat pacman soms aan zijn kant blijft om de ocassionele vijand te capturen
+        # maar dit mag ook niet te lang oplopen zodat het objectief dots eten blijft
         if not state.is_pacman:
             self.steps_on_own_half += 1
         else:
             self.steps_on_own_half = 0
-        return super().choose_action(game_state)
+
+        actions = game_state.get_legal_actions(self.index)
+        # filteren van stop, is zeer zelden een nuttige actie voor de offensive
+        legal_actions = [action for action in actions if action != Directions.STOP]
+
+        # Anti-oscillation
+        if len(self.pos_history) >= 4:
+            # detectie: tussen twee posities geoscilleerd
+            if (self.pos_history[-1] == self.pos_history[-3] and
+                    self.pos_history[-2] == self.pos_history[-4]):
+                current_direction = game_state.get_agent_state(self.index).configuration.direction
+                # check voor legale acties die
+                non_reverse = [
+                    action for action in legal_actions
+                    if action != Directions.REVERSE[current_direction]
+                ]
+                if non_reverse:
+                    return random.choice(non_reverse)
+                # else doomed want geen legale acties over
+
+        # TODO: code duplicatie van parent, maar bovenstaande moet eerder gerund worden
+        values = [self.evaluate(game_state, action) for action in legal_actions]
+        max_value = max(values)
+        best_actions = [action for action, value in zip(legal_actions, values) if value == max_value]
+
+        food_left = len(self.get_food(game_state).as_list())
+        if food_left <= 2:
+            best_dist = 9999
+            best_action = None
+            for action in legal_actions:
+                successor = self.get_successor(game_state, action)
+                pos2 = successor.get_agent_position(self.index)
+                dist = self.get_maze_distance(self.start, pos2)
+                if dist < best_dist:
+                    best_action = action
+                    best_dist = dist
+            if best_action is not None:
+                return best_action
+
+        return random.choice(best_actions)
 
     def get_features(self, game_state, action):
         features = util.Counter()
