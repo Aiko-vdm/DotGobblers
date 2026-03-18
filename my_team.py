@@ -769,8 +769,10 @@ class OffensiveReflexAgent(ReflexCaptureAgent):
                 self.pos_history.pop(0)
         if not state.is_pacman:
             self.steps_on_own_half += 1
-        else: self.steps_on_own_half = 0
+        else:
+            self.steps_on_own_half = 0
         return super().choose_action(game_state)
+
     def get_features(self, game_state, action):
         features = util.Counter()
         successor = self.get_successor(game_state, action)
@@ -799,6 +801,7 @@ class OffensiveReflexAgent(ReflexCaptureAgent):
         my_pos = state.get_position()
         if my_pos is None:
             return features
+
         prev_pos = game_state.get_agent_state(self.index).get_position()
         enemies = [successor.get_agent_state(i) for i in self.get_opponents(successor)]
         defenders = [a for a in enemies if not a.is_pacman and a.get_position() is not None]
@@ -857,7 +860,9 @@ class OffensiveReflexAgent(ReflexCaptureAgent):
         if active_defenders:
             for defender in active_defenders:
                 defender_pos = defender.get_position()
-                if my_pos == defender_pos: features['walk_into_defender'] = 1
+                if my_pos == defender_pos:
+                    features['walk_into_defender'] = 1
+
         if my_pos in self.dead_ends:
             depth = self.dead_ends[my_pos]
             if closest_defender_dist <= depth * 2:
@@ -866,6 +871,7 @@ class OffensiveReflexAgent(ReflexCaptureAgent):
         if self.pos_history:
             count = self.pos_history.count(my_pos)
             features['reverse'] = count
+
         if not state.is_pacman:
             features['steps_on_own_half'] = self.steps_on_own_half
         return features
