@@ -571,7 +571,6 @@ class DefensiveReflexAgent(ReflexCaptureAgent):
                     pos = closed.arg_max()
                     closed[pos] = 0
                     high_trafic_points.append(pos)
-                #self.bottlenecks = bottlenecks
                 self.high_traffic_positions = closed.sorted_keys()[:5]
 
             elif current_state not in closed:
@@ -641,6 +640,7 @@ class DefensiveReflexAgent(ReflexCaptureAgent):
             defenders = [a for a in enemies if not a.is_pacman and a.get_position() is not None]
             active_defenders = [a for a in defenders if a.scared_timer == 0]
             is_chased = False
+            #FIXME: unused variables
             closest_defender_dist = float('inf')
             carrying = successor.get_agent_state(self.index).num_carrying
             if active_defenders:
@@ -686,7 +686,7 @@ class DefensiveReflexAgent(ReflexCaptureAgent):
 
             #distance to a bottleneck
             bottleneck_dist = [self.get_maze_distance(my_pos, bottleneck) for bottleneck in self.bottleneck_positions]
-            features['bottleneck_distance'] = min(bottleneck_dist)
+            features['bottleneck_distance'] = min(bottleneck_dist) if bottleneck_dist else 0
             #FIXME: Code duplication with offensive reflex
             capsules = self.get_capsules_you_are_defending(game_state)
             if capsules:
@@ -711,6 +711,7 @@ class DefensiveReflexAgent(ReflexCaptureAgent):
                     'raid_food_dist': -10,
                     'return_home': -100,
                     'dont_die': -100}
+        #FIXME: delete unused conditional weights
         invader_distance_w = -100 if not is_scared() else 5
         trapped_invader_distance_w = -150 if not is_scared() else 50
         return {'num_invaders': -1000,
