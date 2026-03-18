@@ -417,7 +417,7 @@ class ReflexCaptureAgent(CaptureAgent):
             if degree[not_wall] == 1:
                 queue.push(not_wall)
                 self.dead_ends[not_wall] = 1
-                self.debug_draw(not_wall, color=(1, 1, 1))
+                self.debug_draw(not_wall, color=(224,33,216))
 
         while not queue.is_empty():
             not_wall = queue.pop()
@@ -428,7 +428,7 @@ class ReflexCaptureAgent(CaptureAgent):
                 if degree[x] == 1 and x not in self.dead_ends:
                     self.dead_ends[x] = self.dead_ends[not_wall] + 1
                     queue.push(x)
-                    self.debug_draw(x, color=(1, 1, 1))
+                    self.debug_draw(x, color=(224,33,216))
 
     def choose_action(self, game_state):
         """
