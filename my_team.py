@@ -716,6 +716,38 @@ class OffensiveReflexAgent(ReflexCaptureAgent):
         """
         return min(self.get_maze_distance(pos, home_pos) for home_pos in self.home_positions)
 
+    def _best_food_target(self, game_state, my_pos, food_list, defenders, radius=2):
+        """
+        Helper functie die helpt met bepalen wat de beste food-target is op dit moment.
+        Gebeurt op basis van berekenen waar clusters van voedsel zich bevinden en hun grootte.
+        Aangepaste Dijkstra procedure helpt met bepalen hoe 'veilig' het is om daar te geraken
+        """
+        # Zou normaal gezien niet moeten voorkomen gezien de game stopt bij de laatste 2, maar just in case want weet
+        # nog niet zeker hoe de game logica hier in elkaar zit.
+        if not food_list:
+            return None, 0, 0
+
+        clusters = []
+        for food in food_list:
+            count = 0
+            for rest_food in food_list:
+                if self.get_maze_distance(food, rest_food) <= radius:
+                    count += 1
+            clusters.append((food, count))
+
+        best_food = None
+        best_cluster_size = 0
+        best_cost = float('inf')
+        # Ga voor elke food na welke de beste is op basis van de dijkstra measure
+        for food, size in clusters:
+            path_cost = self.dijkstra_distance(game_state, my_pos, food, defenders)
+            score = path_cost - (size * 2)
+            if score < best_cost:
+                best_cost = score
+                best_food = food
+                best_cluster_size = size
+
+        return best_food, best_cluster_size, best_cost
 
     def dijkstra_distance(self, game_state, start, target, defenders, danger_radius=5, penalty_weight=10):
         """
@@ -777,25 +809,6 @@ class OffensiveReflexAgent(ReflexCaptureAgent):
         features = util.Counter()
         successor = self.get_successor(game_state, action)
         food_list = self.get_food(successor).as_list()
-        radius = 2
-        #TODO code duplicatie met defensive reflex
-
-        # ------- compute_clusters START
-        clusters = []
-        for food in food_list:
-            count = 0
-            for rest_food in food_list:
-                if self.get_maze_distance(food, rest_food) <= radius:
-                    count += 1
-            clusters.append((food, count))
-        # -------- compute_clusters END
-        best_food = None
-        best_cluster_size = 0
-
-        for food, size in clusters:
-            if size > best_cluster_size:
-                best_cluster_size = size
-                best_food = food
 
         state = successor.get_agent_state(self.index)
         my_pos = state.get_position()
@@ -823,9 +836,14 @@ class OffensiveReflexAgent(ReflexCaptureAgent):
         features['score'] = self.get_score(successor)
         features['uneaten_food'] = len(food_list)
 
+        best_food, best_cluster_size, best_cost = self._best_food_target(
+            successor,
+            my_pos,
+            food_list,
+            active_defenders,
+        )
         if best_food is not None:
-            distance = self.dijkstra_distance(successor, my_pos, best_food, active_defenders)
-            features['distance_to_cluster'] = distance
+            features['distance_to_cluster'] = best_cost #dijkstra safety cost
             features['cluster_size'] = best_cluster_size
 
         if scared_defenders:
