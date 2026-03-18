@@ -713,12 +713,12 @@ class DefensiveReflexAgent(ReflexCaptureAgent):
         trapped_invader_distance_w = -150 if not is_scared() else 50
         return {'num_invaders': -1000,
                 'on_defense': 100,
-                'invader_distance': -100,
+                'invader_distance': -200,
                 'trapped_invader_distance': -150,
                 'stop': -100,
                 'reverse': -2,
-                'distance_to_last_eaten_food': -10,
-                'bottleneck_distance': -10,
+                'distance_to_last_eaten_food': -20,
+                'bottleneck_distance': -15,
                 'dist_to_capsule': -10,
                 'capsules': 1000}
 
