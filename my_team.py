@@ -657,8 +657,8 @@ class OffensiveReflexAgent(ReflexCaptureAgent):
             capsule_dists = [self.dijkstra_distance(successor, my_pos, capsule, active_defenders) for capsule in capsules]
             features['dist_to_capsule'] = min(capsule_dists)
             if is_chased or carrying >= 4:
-                #FIXME: vermenigvuldig feature met carrying
-                features['capsule_pressure'] = 1
+                # hoe meer je draagt, hoe meer je te verliezen hebt, hoe interessanter het wordt om defense van de tegenstander uit te schakelen
+                features['capsule_pressure'] = 1 * carrying
 
         # TODO: ter info: logica voor return home werd naar boven verplaatst, om return home
         #       niet te veel te veel te laten afhangen van de tegenstander hun scared state.
