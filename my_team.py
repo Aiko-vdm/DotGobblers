@@ -704,8 +704,8 @@ class OffensiveReflexAgent(ReflexCaptureAgent):
 
     def get_weights(self, game_state, action):
         return {'score': 100,
-                   'uneaten_food': -100,
-                   'distance_to_cluster': -5,
+                   'uneaten_food': -150,
+                   'distance_to_cluster': -10,
                    'cluster_size': 5,
                    'return_home': -4,
                    'cash_in_now': 150,
