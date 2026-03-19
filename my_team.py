@@ -652,10 +652,18 @@ class OffensiveReflexAgent(ReflexCaptureAgent):
         # meer food in bezit + langere afstand verhogen druk voor return home
         # urgency kan multipliceren tot x3
         features['return_home'] = carrying * distance_to_home * (1 + (2 * urgency))
-        # finale sprint voor end game situatie + tijdsmarge
-        #FIXME: niet zeker of de logica hier wel klopt
-        if carrying > 0 and time_left <= distance_to_home + 8:
-            features['cash_in_now'] = 1
+        
+        # manier om een finale sprint in de end game te motiveren.
+        # idee: er zijn 2 situationele condities: 
+        #   Draag ik eten bij me?
+        #   Is mijn tijd aan het verlopen relatief tot over mijn afstand naar huis?
+        #       (we willen niet zomaar op basis van tijd triggeren, want je heb wel of geen tijd afhankelijk van waar je je bevindt)
+        #       (we doen de afstand plust een 'slack window', want gewoon de afstand kan te nipt zijn gezien er onderweg nog obstakels kunnen voordoen)
+        # zo ja: kijken we naar de actie: brengt het me dichter bij huis? Zo ja, cash in now!!
+        prev_distance_to_home = self._distance_to_home_position(prev_pos)
+        if carrying > 0 and time_left <= prev_distance_to_home + 50:
+            if distance_to_home < prev_distance_to_home:
+                features['cash_in_now'] = 1
 
         # capsules worden interessanter/belangrijker wanneer in chase of wanneer
         # er meer voedsel in bezit is (hogere risico situatie)
