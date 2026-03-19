@@ -654,7 +654,7 @@ class OffensiveReflexAgent(ReflexCaptureAgent):
         features['return_home'] = carrying * distance_to_home * (1 + (2 * urgency))
         
         # manier om een finale sprint in de end game te motiveren.
-        # idee: er zijn 2 situationele condities: 
+        # idee: er zijn 2 situationele condities:
         #   Draag ik eten bij me?
         #   Is mijn tijd aan het verlopen relatief tot over mijn afstand naar huis?
         #       (we willen niet zomaar op basis van tijd triggeren, want je heb wel of geen tijd afhankelijk van waar je je bevindt)
@@ -680,6 +680,7 @@ class OffensiveReflexAgent(ReflexCaptureAgent):
         if scared_defenders:
             min_scared_timer = min(a.scared_timer for a in scared_defenders)
             if min_scared_timer >= 4:
+                # geen penalty voor in een dead end zolang defenders scared zijn
                 features['dead_end'] = 0
                 prev_enemies = [game_state.get_agent_state(i) for i in self.get_opponents(game_state)]
                 prev_scared = [a for a in prev_enemies if not a.is_pacman and a.scared_timer > 0 and a.get_position() is not None]
@@ -698,7 +699,7 @@ class OffensiveReflexAgent(ReflexCaptureAgent):
 
         if my_pos in self.dead_ends:
             depth = self.dead_ends[my_pos]
-            if closest_defender_dist <= depth * 2:
+            if closest_defender_dist <= depth * 1.5:
                 features['dead_end'] = 1
 
         # FIXME: reverse is deprecated: Zie anti oscillatie in choose action
