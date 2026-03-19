@@ -619,8 +619,9 @@ class OffensiveReflexAgent(ReflexCaptureAgent):
 
         if my_pos == self.start and prev_pos != self.start:
             features['dont_die'] = 1
-
+        # directe reward, heeft invloed op het incashen van eten
         features['score'] = self.get_score(successor)
+        # geeft een meer globale druk om te eten in plaats van treuzelen of andere niet-eet acties
         features['uneaten_food'] = len(food_list)
 
         best_food, best_cluster_size, best_cost = self._best_food_target(
@@ -630,7 +631,14 @@ class OffensiveReflexAgent(ReflexCaptureAgent):
             active_defenders,
         )
         if best_food is not None:
-            features['distance_to_cluster'] = best_cost #dijkstra safety cost
+            # opgelet: afstand tot eten is meer 'defender' aware wegens specifieke dijkstra_distance implementatie
+            # redeneren over onderstaande best door beiden features in tanden te nemen:
+                # Actie a gaat naar kleine cluster --> distance = 6, size = 2
+                # Actie b gaat naar grote cluster maar iets verder weg --> distance = 8, size = 5
+                # eval a = -1 * 6 + 1 * 2 = -4
+                # eval b = -1 * 8 + 1 * 5 = -3
+                # verhogen van cluster size zal de 'tradeoff' met de afstand beïnvloeden
+            features['distance_to_cluster'] = best_cost
             features['cluster_size'] = best_cluster_size
 
         carrying = state.num_carrying
@@ -644,7 +652,8 @@ class OffensiveReflexAgent(ReflexCaptureAgent):
         # meer food in bezit + langere afstand verhogen druk voor return home
         # urgency kan multipliceren tot x3
         features['return_home'] = carrying * distance_to_home * (1 + (2 * urgency))
-        # finale sprint voor end game situatie ->> +8 als marge
+        # finale sprint voor end game situatie + tijdsmarge
+        #FIXME: niet zeker of de logica hier wel klopt
         if carrying > 0 and time_left <= distance_to_home + 8:
             features['cash_in_now'] = 1
 
@@ -660,10 +669,6 @@ class OffensiveReflexAgent(ReflexCaptureAgent):
                 # hoe meer je draagt, hoe meer je te verliezen hebt, hoe interessanter het wordt om defense van de tegenstander uit te schakelen
                 features['capsule_pressure'] = 1 * carrying
 
-        # TODO: ter info: logica voor return home werd naar boven verplaatst, om return home
-        #       niet te veel te veel te laten afhangen van de tegenstander hun scared state.
-        #       lost hopelijk probleem op waar pacman iets te veel jaagde achter ghosts en zijn doel
-        #       van food te verzamelen te veel overrulede
         if scared_defenders:
             min_scared_timer = min(a.scared_timer for a in scared_defenders)
             if min_scared_timer >= 4:
@@ -688,21 +693,46 @@ class OffensiveReflexAgent(ReflexCaptureAgent):
             if closest_defender_dist <= depth * 2:
                 features['dead_end'] = 1
 
+        # FIXME: reverse is deprecated: Zie anti oscillatie in choose action
+        #       weight bij submission van agent ook 0 dus niet gebruikt
         if self.pos_history:
             count = self.pos_history.count(my_pos)
             features['reverse'] = count
 
         if not state.is_pacman:
+            # manier om 'camping' op eigen grondgebied tegen te gaan
             features['steps_on_own_half'] = self.steps_on_own_half
             if invaders:
                 invader_distances = [self.get_maze_distance(my_pos, a.get_position()) for a in invaders]
                 min_invader_dist = min(invader_distances)
                 if min_invader_dist <= 3:
+                    # voor goedkope defensieve acties als er vijand op eigen terrein is
                     features['close_invader_distance'] = min_invader_dist
 
         return features
 
     def get_weights(self, game_state, action):
+        # for mental sanity als door de bomen het bos niet zien
+        # Mogelijke interacties tussen features:
+        #   motivatie voor eten versus 'veilig spelen':
+        #       uneaten_food
+        #       cluster_size
+        #       distance_to_cluster
+        #       → versterk deze voor eet-motivatie
+        #       ghost_proximity
+        #       dead_end
+        #       walk_into_defender
+        #       dont_die
+        #       → versterk deze voor veiligheid
+        #    motivatie voor terug naar huis gaan:
+        #       return_home als meer globale gradueel effect en cash_in_now als harde trigger in end-game
+        #    defense op eigen kant:
+        #       close_invader_distance
+        #       steps_on_own_half
+        #       → om effect toe te nemen: verminder close_invader,
+        #       voor duur pas penalisatie van steps on own half aan
+
+
         return {'score': 100,
                    'uneaten_food': -150,
                    'distance_to_cluster': -10,
