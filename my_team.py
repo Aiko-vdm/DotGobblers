@@ -498,10 +498,7 @@ class OffensiveReflexAgent(ReflexCaptureAgent):
          Paths passing near active defenders are penalised proportionally to their proximity.
          Falls back to maze distance when there are no defenders or all of the defenders are outside the danger_radius of start. 
         """
-        walls = game_state.get_walls()
-
         unreachable = float('inf')
-
 
         no_threat_nearby = (not defenders or 
                             min(self.get_maze_distance(start, defender.get_position()) for defender in defenders) > danger_radius)
@@ -523,7 +520,7 @@ class OffensiveReflexAgent(ReflexCaptureAgent):
             for dx, dy in self.cardinal_distances:
                 newx, newy = x + dx, y + dy
                 neighbour = (newx, newy)
-                if not walls[newx][newy] and neighbour not in visited:
+                if not self.walls[newx][newy] and neighbour not in visited:
                     new_cost = costs[current_cell] + self._cell_danger_penalty(neighbour, defenders, danger_radius, penalty_weight) + 1
                     if neighbour not in costs or new_cost < costs[neighbour]:
                         costs[neighbour] = new_cost
