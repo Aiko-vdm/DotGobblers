@@ -72,45 +72,49 @@ class ReflexCaptureAgent(CaptureAgent):
         CaptureAgent.register_initial_state(self, game_state)
         self.compute_dead_ends()
 
-    #TODO: Consider set implementation (membership check in O(1) )
+    def _get_walkable_neighbours(self, cell):
+        """
+        Returns all non-wall positions directly neighbouring cell.
+        """
+        x, y = cell
+        return [(x + dx, y + dy) for dx, dy in self.cardinal_distances if not self.walls[x + dx][y + dy]]
+    
     def compute_dead_ends(self):
-        # FIXME: move import
-        walls = self.walls
+        """
+        Identifies dead-end cells in a maze and records how deep each one is. 
+        A cell with depth 1 only has one neighbouring walkable cell. A cell with depth n is a corridor of length n.
+        Uses a BFS-like algorithm: fill the queue with all cells with depth 1 (dead-end tips), 
+        reduce neighbouring degrees and propagate until no further dead ends are found.
+        """
         neighbours = {}
         degree = {}
 
-        for x in range(walls.width):
-            for y in range(walls.height):
-                if walls[x][y]:
+        for x in range(self.walls.width):
+            for y in range(self.walls.height):
+                if self.walls[x][y]:
                     continue
-                not_wall = (x, y)
-                list_of_neighbours = []
-                for dx, dy in [(1, 0), (0, 1), (-1, 0), (0, -1)]:
-                    newx, newy = x + dx, y + dy
-
-                    if not walls[newx][newy]:
-                        list_of_neighbours.append((newx, newy))
-
-                neighbours[not_wall] = list_of_neighbours
-                degree[not_wall] = len(list_of_neighbours)
+                walkable_cell = (x, y)
+                list_of_neighbours = self._get_walkable_neighbours(walkable_cell)
+                neighbours[walkable_cell] = list_of_neighbours
+                degree[walkable_cell] = len(list_of_neighbours)
 
         queue = Queue()
-        for not_wall in degree:
-            if degree[not_wall] == 1:
-                queue.push(not_wall)
-                self.dead_ends[not_wall] = 1
-                self.debug_draw(not_wall, color=(224,33,216))
+        for walkable_cell in degree:
+            if degree[walkable_cell] == 1:
+                queue.push(walkable_cell)
+                self.dead_ends[walkable_cell] = 1
+                self.debug_draw(walkable_cell, color=(224,33,216))
 
         while not queue.is_empty():
-            not_wall = queue.pop()
-            for x in neighbours[not_wall]:
-                if x not in degree: continue
-                degree[x] -= 1
-
-                if degree[x] == 1 and x not in self.dead_ends:
-                    self.dead_ends[x] = self.dead_ends[not_wall] + 1
-                    queue.push(x)
-                    self.debug_draw(x, color=(224,33,216))
+            walkable_cell = queue.pop()
+            for neighbour in neighbours[walkable_cell]:
+                if neighbour not in degree: continue
+                degree[neighbour] -= 1
+                # "remove" dead-end tip from the maze, if neighbour's degree drops to 1 as a result, it becomes a new dead-end tip 
+                if degree[neighbour] == 1 and neighbour not in self.dead_ends: 
+                    self.dead_ends[neighbour] = self.dead_ends[walkable_cell] + 1
+                    queue.push(neighbour)
+                    self.debug_draw(neighbour, color=(224,33,216))
 
     def choose_action(self, game_state):
         """
