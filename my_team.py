@@ -189,6 +189,7 @@ class DefensiveReflexAgent(ReflexCaptureAgent):
     could be like.  It is not the best or only way to make
     such an agent.
     """
+    #TODO: docstrings
     def __init__(self, index, time_for_computing=.1):
         super().__init__(index, time_for_computing)
         self.bottleneck_positions = None
@@ -210,6 +211,7 @@ class DefensiveReflexAgent(ReflexCaptureAgent):
         draw_bottlenecks()
     #TODO: exclude from computed clusters
     def find_bottlenecks(self, game_state):
+        #FIXME: remove condition by just returning all([...]) + in seperate helper function?
         def pos_is_gate(row,col,game_state):
             if all([not game_state.has_wall(col, row),
                     not game_state.has_wall(col + 1, row),
@@ -219,7 +221,7 @@ class DefensiveReflexAgent(ReflexCaptureAgent):
                 return True
             else:
                 return False
-
+        #FIXME: middle_x is computed in 3 seperate functions (code duplication) -> helper function
         middle_x = (game_state.data.layout.width - 1) // 2 if self.red else game_state.data.layout.width // 2
         defense_midfield_x = middle_x - middle_x // 4 if self.red else middle_x + middle_x // 4
         result = []
@@ -246,6 +248,7 @@ class DefensiveReflexAgent(ReflexCaptureAgent):
         return [food for _, food in food_with_dist]
 
     def get_border_dist(self, game_state, pos):
+        #FIXME: Code duplication with compute_home_positions => helper function in parent class
         middle_x = (game_state.data.layout.width - 1) // 2 if self.red else game_state.data.layout.width // 2
         height = game_state.data.layout.height
         border_cells = [(middle_x, y) for y in range(height-1) if not game_state.has_wall(middle_x,y)]
@@ -279,9 +282,10 @@ class DefensiveReflexAgent(ReflexCaptureAgent):
         my_pos = my_state.get_position()
         scared_timer = game_state.get_agent_state(self.index).scared_timer
         is_scared = scared_timer > 0
-
+        #FIXME: better variable naming: retreat_threshold sounds numeric
         retreat_threshold = scared_timer <= self.get_border_dist(game_state, my_pos)
         if is_scared:
+            #FIXME: We compute enemies/defenders/... in Offensive agent as well => helper function in parent class
             enemies = [successor.get_agent_state(i) for i in self.get_opponents(successor)]
             defenders = [a for a in enemies if not a.is_pacman and a.get_position() is not None]
             active_defenders = [a for a in defenders if a.scared_timer == 0]
@@ -333,7 +337,7 @@ class DefensiveReflexAgent(ReflexCaptureAgent):
             #distance to a bottleneck
             bottleneck_dist = [self.get_maze_distance(my_pos, bottleneck) for bottleneck in self.bottleneck_positions]
             features['bottleneck_distance'] = min(bottleneck_dist) if bottleneck_dist else 0
-            #FIXME: Code duplication with offensive reflex
+            #FIXME: Code duplication with offensive reflex => helper function in parent class
             capsules = self.get_capsules_you_are_defending(game_state)
             if capsules:
                 features['capsules'] = len(capsules)
@@ -346,6 +350,7 @@ class DefensiveReflexAgent(ReflexCaptureAgent):
 
     def get_weights(self, game_state, action):
         #TODO: zie in welke scope definieerbaar. Indien op andere plekken nuttig, hoger in de scope
+        #FIXME: is_scared doesn't need if
         def is_scared():
             if game_state.get_agent_state(self.index).scared_timer > 0:
                 return True
