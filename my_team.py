@@ -63,6 +63,7 @@ class ReflexCaptureAgent(CaptureAgent):
     def __init__(self, index, time_for_computing=.1):
         super().__init__(index, time_for_computing)
         self.start = None
+        self.cardinal_distances = [(1, 0), (0, 1), (-1, 0), (0, -1)]
 
     def register_initial_state(self, game_state):
         self.start = game_state.get_agent_position(self.index)
@@ -499,7 +500,6 @@ class OffensiveReflexAgent(ReflexCaptureAgent):
         """
         walls = game_state.get_walls()
 
-        cardinal_distances = [(1, 0), (0, 1), (-1, 0), (0, -1)]
         unreachable = float('inf')
 
 
@@ -520,7 +520,7 @@ class OffensiveReflexAgent(ReflexCaptureAgent):
             if current_cell == target:
                 return costs[current_cell]
             x, y = int(current_cell[0]), int(current_cell[1])
-            for dx, dy in cardinal_distances:
+            for dx, dy in self.cardinal_distances:
                 newx, newy = x + dx, y + dy
                 neighbour = (newx, newy)
                 if not walls[newx][newy] and neighbour not in visited:
