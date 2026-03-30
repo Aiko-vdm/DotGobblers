@@ -473,7 +473,7 @@ class OffensiveReflexAgent(ReflexCaptureAgent):
         best_cost = float('inf')
         # Ga voor elke food na welke de beste is op basis van de dijkstra measure
         for food, size in clusters:
-            path_cost = self.dijkstra_distance(game_state, my_pos, food, defenders)
+            path_cost = self._dijkstra_distance(game_state, my_pos, food, defenders)
             score = path_cost - (size * 2)
             if score < best_cost:
                 best_cost = score
@@ -481,49 +481,54 @@ class OffensiveReflexAgent(ReflexCaptureAgent):
                 best_cluster_size = size
 
         return best_food, best_cluster_size, best_cost
-    #TODO make private
-    def dijkstra_distance(self, game_state, start, target, defenders, danger_radius=5, penalty_weight=10):
+    
+    def _cell_danger_penalty(self, cell, defenders, danger_radius, penalty_weight):
         """
-        Adaptatie van dijkstra's algoritme, geef kortste afstand tot een target tenzij er (gevaarlijke) adversaries zijn: penaliseer in dat geval paden
-        die gevaarlijk zijn door een aangepaste afstand.
+        Computes a danger penalty for a given cell based on the proximity of active defenders.  
+        The closer a defender is to the cell, the bigger the penalty. 
+        Returns 0 if there's no active defender within the danger_radius of the cell.
         """
-        # Skip Dijkstra if no active defenders/ defenders too far away
-        if not defenders: 
-            return self.get_maze_distance(start, target)
-        
-        min_defender_dist = min(self.get_maze_distance(start, defender.get_position()) for defender in defenders)
-        if min_defender_dist > danger_radius:
-            #TODO: zie opmerking als elders: zijn we in danger vanaf een manhatten distance kleiner of gelijk aan 5?
-            return self.get_maze_distance(start, target)
-        
+        min_dist = min(self.get_maze_distance(cell, defender.get_position()) for defender in defenders)
+        return max(0, danger_radius - min_dist) * penalty_weight
+    
+    def _dijkstra_distance(self, game_state, start, target, defenders, danger_radius=5, penalty_weight=10):
+        """
+         Computes the cost of the shortest path from start to target using a penalty-weighted Dijkstra. 
+         Paths passing near active defenders are penalised proportionally to their proximity.
+         Falls back to maze distance when there are no defenders or all of the defenders are outside the danger_radius of start. 
+        """
         walls = game_state.get_walls()
 
-        def penalty(cell):
-            min_dist = min(self.get_maze_distance(cell, defender.get_position()) for defender in defenders)
-            return max(0, danger_radius - min_dist) * penalty_weight # simple function, the closer a defender, the worse (can be finetuned)
+        cardinal_distances = [(1, 0), (0, 1), (-1, 0), (0, -1)]
+        unreachable = float('inf')
+
+
+        no_threat_nearby = (not defenders or 
+                            min(self.get_maze_distance(start, defender.get_position()) for defender in defenders) > danger_radius)
+        if no_threat_nearby:
+            return self.get_maze_distance(start, target)
 
         pq = PriorityQueue()
         pq.push(start, 0)
         visited = set()
         costs = {start: 0}
 
-        #Start Dijkstra
         while not pq.is_empty():
-            cell = pq.pop()
-            if cell in visited: continue
-            visited.add(cell)
-            if cell == target:
-                return costs[cell]
-            x, y = int(cell[0]), int(cell[1])
-            for dx, dy in [(1, 0), (0, 1), (-1, 0), (0, -1)]:
+            current_cell = pq.pop()
+            if current_cell in visited: continue
+            visited.add(current_cell)
+            if current_cell == target:
+                return costs[current_cell]
+            x, y = int(current_cell[0]), int(current_cell[1])
+            for dx, dy in cardinal_distances:
                 newx, newy = x + dx, y + dy
                 neighbour = (newx, newy)
                 if not walls[newx][newy] and neighbour not in visited:
-                    new_cost = costs[cell] + 1 + penalty(neighbour)
+                    new_cost = costs[current_cell] + self._cell_danger_penalty(neighbour, defenders, danger_radius, penalty_weight) + 1
                     if neighbour not in costs or new_cost < costs[neighbour]:
                         costs[neighbour] = new_cost
                         pq.update(neighbour, new_cost)
-        return float('inf') #safety fallback, when the entire pq has been exhausted w/o path to target
+        return unreachable 
     
     def choose_action(self, game_state):
         my_pos = game_state.get_agent_state(self.index).get_position()
@@ -671,7 +676,7 @@ class OffensiveReflexAgent(ReflexCaptureAgent):
         #       een penalty voor de volgende actie
         capsules = self.get_capsules(successor)
         if capsules:
-            capsule_dists = [self.dijkstra_distance(successor, my_pos, capsule, active_defenders) for capsule in capsules]
+            capsule_dists = [self._dijkstra_distance(successor, my_pos, capsule, active_defenders) for capsule in capsules]
             features['dist_to_capsule'] = min(capsule_dists)
             if is_chased or carrying >= 4:
                 # hoe meer je draagt, hoe meer je te verliezen hebt, hoe interessanter het wordt om defense van de tegenstander uit te schakelen
