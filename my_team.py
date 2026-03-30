@@ -199,8 +199,6 @@ class DefensiveReflexAgent(ReflexCaptureAgent):
         super().register_initial_state(game_state)
         self.previous_food = self.get_food_you_are_defending(game_state).as_list()
         self.last_eaten_food = None
-        #TODO: see if still useful
-        #self.find_high_traffic(game_state)
         self.find_bottlenecks(game_state)
 
 
@@ -234,47 +232,9 @@ class DefensiveReflexAgent(ReflexCaptureAgent):
         for col in colrange:
             for row in range(1,maze_height - 1 ):
                 if pos_is_gate(row,col,game_state):
-                   # self.debug_draw((col,row), (122,244,32))
                     result.append((col, row))
         self.bottleneck_positions = result
 
-    def find_high_traffic(self, game_state):
-        agenda = util.Queue()
-        closed = util.Counter()
-        agenda.push(game_state)  # we push the starting state
-        middle_x = (game_state.data.layout.width - 1) // 2 if self.red else game_state.data.layout.width // 2
-        defense_midfield_x = middle_x - middle_x // 2 if self.red else middle_x + middle_x // 2
-
-        midfield_pos = [(defense_midfield_x,y) for y in range(1,17) if not game_state.has_wall(defense_midfield_x, y)]
-
-        end_positions = [(middle_x, y) for y in range(1, 17) if not game_state.has_wall(middle_x,y)]
-        while not agenda.is_empty():
-            current_state = agenda.pop()
-            # if current_state.get_agent_position(self.index) == end_position:
-            if current_state.get_agent_position(self.index) in end_positions:
-                high_trafic_points = []
-                for i in range(0, 10):
-                    pos = closed.arg_max()
-                    closed[pos] = 0
-                    high_trafic_points.append(pos)
-                self.high_traffic_positions = closed.sorted_keys()[:5]
-
-            elif current_state not in closed:
-                closed[current_state.get_agent_position(self.index)] = 1
-
-                legal_actions = current_state.get_legal_actions(self.index)
-                successor_states = [current_state.generate_successor(self.index, action) for action in legal_actions]
-                for successor_state in successor_states:
-                    if successor_state.get_agent_position(self.index) not in closed:
-                        agenda.push(successor_state)
-                    else:
-                        visited_position = successor_state.get_agent_position(self.index)
-                        closed[visited_position] += 1
-        #draw end-goal boundry
-        # for pos in end_positions:
-        #     self.debug_draw(pos, (122,244,32))
-        # for pos in midfield_pos:
-        #     self.debug_draw(pos, (122,244,32))
     def get_food_close_to_border(self, game_state):
         food_list = self.get_food(game_state).as_list()
         middle_x = (game_state.data.layout.width - 1) // 2 if self.red else game_state.data.layout.width // 2
@@ -397,9 +357,7 @@ class DefensiveReflexAgent(ReflexCaptureAgent):
                     'raid_food_dist': -10,
                     'return_home': -100,
                     'dont_die': -100}
-        #FIXME: delete unused conditional weights
-        invader_distance_w = -100 if not is_scared() else 5
-        trapped_invader_distance_w = -150 if not is_scared() else 50
+        
         return {'num_invaders': -1000,
                 'on_defense': 100,
                 'invader_distance': -200,
