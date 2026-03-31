@@ -379,14 +379,18 @@ class OffensiveReflexAgent(ReflexCaptureAgent):
   we give you to get an idea of what an offensive agent might look like,
   but it is by no means the best or only way to build an offensive agent.
   """
-
-    def register_initial_state(self, game_state):
-        #FIXME: variabelen die in init kunnen mss in init
-        super().register_initial_state(game_state)
+    def __init__(self, index, time_for_computing=.1):
+        super().__init__(index, time_for_computing)
         self.pos_history = []
         self.pos_hist_len = 4
         self.steps_on_own_half = 0
         self.initial_timeleft = 1200
+        self.home_positions = None
+
+    def register_initial_state(self, game_state):
+        #FIXME: variabelen die in init kunnen mss in init
+        super().register_initial_state(game_state)
+
         # bereken op voorhand de plekken waar we terug naar huis kunnen gaan
         self.home_positions = self._compute_home_positions(game_state)
 
