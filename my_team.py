@@ -104,7 +104,8 @@ class ReflexCaptureAgent(CaptureAgent):
         while not queue.is_empty():
             walkable_cell = queue.pop()
             for neighbour in neighbours[walkable_cell]:
-                if neighbour not in degree: continue
+                if neighbour not in degree:
+                    continue
                 degree[neighbour] -= 1
                 # "remove" dead-end tip from the maze, if neighbour's degree drops to 1 as a result, it becomes a new dead-end tip 
                 if degree[neighbour] == 1 and neighbour not in self.dead_ends: 
@@ -238,7 +239,8 @@ class DefensiveReflexAgent(ReflexCaptureAgent):
         middle_x = (game_state.data.layout.width - 1) // 2 if self.red else game_state.data.layout.width // 2
         height = game_state.data.layout.height
         border_cells = [(middle_x, y) for y in range(height-1) if not game_state.has_wall(middle_x,y)]
-        if not border_cells: return 0
+        if not border_cells:
+            return 0
         return min(self.get_maze_distance(pos, bc) for bc in border_cells)
 
     def get_features(self, game_state, action):
@@ -295,7 +297,8 @@ class DefensiveReflexAgent(ReflexCaptureAgent):
         else:
             # Computes whether we're on defense (1) or offense (0)
             features['on_defense'] = 1
-            if my_state.is_pacman: features['on_defense'] = 0
+            if my_state.is_pacman:
+                features['on_defense'] = 0
 
             # Computes distance to invaders we can see
             enemies = [successor.get_agent_state(i) for i in self.get_opponents(successor)]
@@ -308,9 +311,11 @@ class DefensiveReflexAgent(ReflexCaptureAgent):
                 dist_trapped = [self.get_maze_distance(my_pos, a.get_position()) for a in enemies if a in self.dead_ends]
                 features['trapped_invader_distance'] = min(dist_trapped) if len(dist_trapped) > 0 else 0
 
-            if action == Directions.STOP: features['stop'] = 1
+            if action == Directions.STOP:
+                features['stop'] = 1
             rev = Directions.REVERSE[game_state.get_agent_state(self.index).configuration.direction]
-            if action == rev: features['reverse'] = 1
+            if action == rev:
+                features['reverse'] = 1
 
             if len(invaders) == 0 and self.last_eaten_food is not None:
                 dist = self.get_maze_distance(my_pos, self.last_eaten_food)
@@ -368,7 +373,7 @@ class OffensiveReflexAgent(ReflexCaptureAgent):
         observable_distance -- from this distance, you can either chase or be chased due to observable distance
         endgame_home_slack -- time offset given for endgame strategy. Increase tot start the endgame strategy earlier.
         invader_close_distance -- max distance to attack enemy invaders when on own side
-        dead_end_danger_scale -- a number multiplied with the depth of dead ends to give escape margin from dead-ends
+        dead_end_danger_factor -- a number multiplied with the depth of dead ends to give escape margin from dead-ends
 
         """
         super().__init__(index, time_for_computing)
@@ -482,7 +487,8 @@ class OffensiveReflexAgent(ReflexCaptureAgent):
 
         while not pq.is_empty():
             current_cell = pq.pop()
-            if current_cell in visited: continue
+            if current_cell in visited: 
+                continue
             visited.add(current_cell)
             if current_cell == target:
                 return costs[current_cell]
