@@ -64,7 +64,7 @@ class ReflexCaptureAgent(CaptureAgent):
         self.cardinal_distances = [(1, 0), (0, 1), (-1, 0), (0, -1)]
         self.walls = None
         self.dead_ends = {}
-        
+
 
     def register_initial_state(self, game_state):
         self.start = game_state.get_agent_position(self.index)
@@ -182,22 +182,18 @@ class DefensiveReflexAgent(ReflexCaptureAgent):
     def __init__(self, index, time_for_computing=.1):
         super().__init__(index, time_for_computing)
         self.bottleneck_positions = None
-        #FIXME: deprecated
-        self.high_traffic_positions = None
-
+        self.last_eaten_food = None
+        self.previous_food = None
 
     def register_initial_state(self, game_state):
         super().register_initial_state(game_state)
         self.previous_food = self.get_food_you_are_defending(game_state).as_list()
-        self.last_eaten_food = None
         self.find_bottlenecks(game_state)
 
-
-
         def draw_bottlenecks():
+            """Draw the bottleneck locations"""
             for bottleneck in self.bottleneck_positions:
                 self.debug_draw(bottleneck, color=(158,224,32))
-        # easier to comment out in one line
         draw_bottlenecks()
     #TODO: Private method? Of in andere scope?
     def find_bottlenecks(self, game_state):
