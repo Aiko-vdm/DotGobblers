@@ -78,7 +78,7 @@ class ReflexCaptureAgent(CaptureAgent):
         """
         x, y = cell
         return [(x + dx, y + dy) for dx, dy in self.cardinal_distances if not self.walls[x + dx][y + dy]]
-    
+    #TODO: Private methode? Zou in principe enkel intern (of door subklassen) gecalled moeten worden
     def compute_dead_ends(self):
         """
         Identifies dead-end cells in a maze and records how deep each one is. 
@@ -193,6 +193,7 @@ class DefensiveReflexAgent(ReflexCaptureAgent):
     def __init__(self, index, time_for_computing=.1):
         super().__init__(index, time_for_computing)
         self.bottleneck_positions = None
+        #FIXME: deprecated
         self.high_traffic_positions = None
 
 
@@ -209,7 +210,7 @@ class DefensiveReflexAgent(ReflexCaptureAgent):
                 self.debug_draw(bottleneck, color=(158,224,32))
         # easier to comment out in one line
         draw_bottlenecks()
-    #TODO: exclude from computed clusters
+    #TODO: Private method? Of in andere scope?
     def find_bottlenecks(self, game_state):
         #FIXME: remove condition by just returning all([...]) + in seperate helper function?
         def pos_is_gate(row,col,game_state):
@@ -236,9 +237,10 @@ class DefensiveReflexAgent(ReflexCaptureAgent):
                 if pos_is_gate(row,col,game_state):
                     result.append((col, row))
         self.bottleneck_positions = result
-
+    #TODO: Private method? Of in andere scope?
     def get_food_close_to_border(self, game_state):
         food_list = self.get_food(game_state).as_list()
+        #TODO: code duplicatie met middle x
         middle_x = (game_state.data.layout.width - 1) // 2 if self.red else game_state.data.layout.width // 2
         food_with_dist = []
         for food in food_list:
@@ -246,7 +248,7 @@ class DefensiveReflexAgent(ReflexCaptureAgent):
             food_with_dist.append((dist, food))
         food_with_dist.sort()
         return [food for _, food in food_with_dist]
-
+    #TODO: Private method? Of in andere scope?
     def get_border_dist(self, game_state, pos):
         #FIXME: Code duplication with compute_home_positions => helper function in parent class
         middle_x = (game_state.data.layout.width - 1) // 2 if self.red else game_state.data.layout.width // 2
@@ -262,7 +264,6 @@ class DefensiveReflexAgent(ReflexCaptureAgent):
         # code bellow checks if our food is eaten and returns the closest position for which this is the case
         eaten = set(self.previous_food) - set(current_food)
         if eaten:
-            #TODO: zie comment lijn 617
             pos = game_state.get_agent_state(self.index).get_position()
             min_dist = float('inf')
             closest = None
@@ -311,7 +312,6 @@ class DefensiveReflexAgent(ReflexCaptureAgent):
                 features['return_home'] = self.get_border_dist(game_state, my_pos)
         else:
             # Computes whether we're on defense (1) or offense (0)
-            # TODO: check if still useful
             features['on_defense'] = 1
             if my_state.is_pacman: features['on_defense'] = 0
 
@@ -345,11 +345,10 @@ class DefensiveReflexAgent(ReflexCaptureAgent):
                 features['dist_to_capsule'] = max(capsule_dists)
 
 
-        #TODO: succesor_score feature and its weight from super are overwritten
         return features
 
     def get_weights(self, game_state, action):
-        #TODO: zie in welke scope definieerbaar. Indien op andere plekken nuttig, hoger in de scope
+        #TODO: zie in welke scope is_scared best te zetten. Indien op andere plekken nuttig, hoger in de scope
         #FIXME: is_scared doesn't need if
         def is_scared():
             if game_state.get_agent_state(self.index).scared_timer > 0:
@@ -381,7 +380,6 @@ class OffensiveReflexAgent(ReflexCaptureAgent):
   but it is by no means the best or only way to build an offensive agent.
   """
 
-    #TODO: Als in eigen regio & invader binnen kleine radius ->> chap die man
     def register_initial_state(self, game_state):
         #FIXME: variabelen die in init kunnen mss in init
         super().register_initial_state(game_state)
@@ -393,6 +391,7 @@ class OffensiveReflexAgent(ReflexCaptureAgent):
         self.home_positions = self._compute_home_positions(game_state)
 
     def _compute_home_positions(self, game_state):
+        #TODO: comments in English
         """
         Deze hulpprocedure berekent posities waar de agent terug naar home-base kan gaan.
         Wordt in de register_initial_state gerund en opgeslagen als een lijst.
@@ -401,6 +400,7 @@ class OffensiveReflexAgent(ReflexCaptureAgent):
         # TODO: Dit is een iets properdere versie dan wat ik voordien in de defensive agent heb gedaan.
         #       Misschien daar ook aanpassen zodat het wat cleaner leest/oogt
         # kolom vanaf waar we technisch gezien "home" zijn, afhankelijk van team.
+        #TODO: code duplicatie met middle_x
         home_x = (layout.width - 1) // 2 if self.red else layout.width // 2
         #TODO: implementatie als een set in plaats van lijst voor snellere membership acces? Zou normaal toch geen duplicate coördinaten moeten bevatten
         return [
@@ -411,6 +411,7 @@ class OffensiveReflexAgent(ReflexCaptureAgent):
         ]
 
     def _distance_to_home_position(self, pos):
+        #TODO Eng docstring
         """
         interne hulpprocedure die gegeven home_positions de kortste afstand vindt naar home.
         Neemt positie tuple en geeft een afstand terug.
@@ -418,6 +419,7 @@ class OffensiveReflexAgent(ReflexCaptureAgent):
         return min(self.get_maze_distance(pos, home_pos) for home_pos in self.home_positions)
 
     def _best_food_target(self, game_state, my_pos, food_list, defenders, radius=2):
+        #TODO: Eng docstring
         """
         Helper functie die helpt met bepalen wat de beste food-target is op dit moment.
         Gebeurt op basis van berekenen waar clusters van voedsel zich bevinden en hun grootte.
@@ -530,9 +532,13 @@ class OffensiveReflexAgent(ReflexCaptureAgent):
                 ]
                 if non_reverse:
                     return random.choice(non_reverse)
-               # FIXME: Else return random action whatsover? Beter om dood te gaan en opnieuw te beginnen dan te blijven in een sink-state?  
 
-        # TODO: code duplicatie van parent, maar bovenstaande moet eerder gerund worden
+        # FIXME: Onderstaande code is identiek aan de code in de parent klasse,
+        #  enkel filteren we in huidige choose_actions nog de stop uit de legal actions. Idealieter hergebruiken we code met super()
+        #   maar weet nog niet zeker wat de beste manier is om dit aan te pakken
+        #   Een suggestie is om in de parrent klasse de hele control loop in een functie te zetten die de legale acties meekrijgt
+        #   Zo kunnen we super() callen met de gefilterde acties.  Nadeel is dat defensive dan ook 2-3 lijnen extra code nodig heeft
+        #   maar dat is minder impactvol dan de 20 lijnen extra code hieronder (+ andere refactor opties die ik in gedachte had zijn nog intrusiever)
         values = [self.evaluate(game_state, action) for action in legal_actions]
         max_value = max(values)
         best_actions = [action for action, value in zip(legal_actions, values) if value == max_value]
@@ -636,8 +642,6 @@ class OffensiveReflexAgent(ReflexCaptureAgent):
 
         # capsules worden interessanter/belangrijker wanneer in chase of wanneer
         # er meer voedsel in bezit is (hogere risico situatie)
-        # FIXME: mogelijke bug van capsule niet eten: als die eet dan wordt de distance naar een eventuele andere capsule ineens zeer groot, en geeft
-        #       een penalty voor de volgende actie
         capsules = self.get_capsules(successor)
         if capsules:
             capsule_dists = [self._dijkstra_distance(successor, my_pos, capsule, active_defenders) for capsule in capsules]
@@ -690,27 +694,6 @@ class OffensiveReflexAgent(ReflexCaptureAgent):
         return features
 
     def get_weights(self, game_state, action):
-        # for mental sanity als door de bomen het bos niet zien
-        # Mogelijke interacties tussen features:
-        #   motivatie voor eten versus 'veilig spelen':
-        #       uneaten_food
-        #       cluster_size
-        #       distance_to_cluster
-        #       → versterk deze voor eet-motivatie
-        #       ghost_proximity
-        #       dead_end
-        #       walk_into_defender
-        #       dont_die
-        #       → versterk deze voor veiligheid
-        #    motivatie voor terug naar huis gaan:
-        #       return_home als meer globale gradueel effect en cash_in_now als harde trigger in end-game
-        #    defense op eigen kant:
-        #       close_invader_distance
-        #       steps_on_own_half
-        #       → om effect toe te nemen: verminder close_invader,
-        #       voor duur pas penalisatie van steps on own half aan
-
-
         return {'score': 100,
                    'uneaten_food': -150,
                    'distance_to_cluster': -10,
