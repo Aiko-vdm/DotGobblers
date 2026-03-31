@@ -679,11 +679,6 @@ class OffensiveReflexAgent(ReflexCaptureAgent):
             if closest_defender_dist <= depth * 1.5:
                 features['dead_end'] = 1
 
-        # FIXME: reverse is deprecated: Zie anti oscillatie in choose action
-        #       weight bij submission van agent ook 0 dus niet gebruikt
-        if self.pos_history:
-            count = self.pos_history.count(my_pos)
-            features['reverse'] = count
 
         if not state.is_pacman:
             # manier om 'camping' op eigen grondgebied tegen te gaan
@@ -705,7 +700,6 @@ class OffensiveReflexAgent(ReflexCaptureAgent):
                    'return_home': -4,
                    'cash_in_now': 150,
                    'dead_end': -75,
-                   'reverse': 0,
                    'ghost_proximity': -10,
                    'dist_to_capsule': -18,
                    'capsule_pressure': 40,
