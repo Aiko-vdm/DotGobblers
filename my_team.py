@@ -64,6 +64,7 @@ class ReflexCaptureAgent(CaptureAgent):
         self.cardinal_distances = [(1, 0), (0, 1), (-1, 0), (0, -1)]
         self.walls = None
         self.dead_ends = {}
+        self.middle_x = None
 
 
     def register_initial_state(self, game_state):
@@ -71,6 +72,7 @@ class ReflexCaptureAgent(CaptureAgent):
         self.walls = game_state.get_walls()
         CaptureAgent.register_initial_state(self, game_state)
         self.compute_dead_ends()
+        self.middle_x = (game_state.data.layout.width - 1) // 2 if self.red else game_state.data.layout.width // 2
 
     def _get_walkable_neighbours(self, cell):
         """ Return all non-wall positions directly neighboring cell."""
@@ -118,12 +120,7 @@ class ReflexCaptureAgent(CaptureAgent):
     def choose_action(self, game_state):
         """ Picks among the actions with the highest Q(s,a). """
         actions = game_state.get_legal_actions(self.index)
-
-        # You can profile your evaluation time by uncommenting these lines
-        # start = time.time()
         values = [self.evaluate(game_state, a) for a in actions]
-        # print 'eval time for agent %d: %.4f' % (self.index, time.time() - start)
-
         max_value = max(values)
         best_actions = [a for a, v in zip(actions, values) if v == max_value]
 
@@ -197,6 +194,12 @@ class DefensiveReflexAgent(ReflexCaptureAgent):
         draw_bottlenecks()
     #TODO: Private method? Of in andere scope?
     def find_bottlenecks(self, game_state):
+        """Look for bottleneck positions on team side and assign to self.bottleneck_positions
+
+        Bottleneck positions are narrow horizontal passages that may be interesting for defense.
+        These are detected by the position_is_gate function in the space between the middle and quarter-line
+        of the maze.
+        """
         #FIXME: in seperate helper function?
         def position_is_gate(row,col,game_state):
             return all([not game_state.has_wall(col, row),
@@ -205,14 +208,12 @@ class DefensiveReflexAgent(ReflexCaptureAgent):
                     game_state.has_wall(col, row - 1),
                     game_state.has_wall(col, row + 1)])
 
-        #FIXME: middle_x is computed in 3 seperate functions (code duplication) -> helper function
-        middle_x = (game_state.data.layout.width - 1) // 2 if self.red else game_state.data.layout.width // 2
-        defense_midfield_x = middle_x - middle_x // 4 if self.red else middle_x + middle_x // 4
+        quarterfield_x = self.middle_x - (self.middle_x // 4) if self.red else self.middle_x + (self.middle_x // 4)
         result = []
         maze_height = game_state.data.layout.height
 
-        blue_colrange = range(middle_x, defense_midfield_x)
-        red_colrange = range(defense_midfield_x, middle_x)
+        blue_colrange = range(self.middle_x, quarterfield_x)
+        red_colrange = range(quarterfield_x, self.middle_x)
         colrange = red_colrange if self.red else blue_colrange
 
         for col in colrange:
@@ -223,20 +224,16 @@ class DefensiveReflexAgent(ReflexCaptureAgent):
     #TODO: Private method? Of in andere scope?
     def get_food_close_to_border(self, game_state):
         food_list = self.get_food(game_state).as_list()
-        #TODO: code duplicatie met middle x
-        middle_x = (game_state.data.layout.width - 1) // 2 if self.red else game_state.data.layout.width // 2
         food_with_dist = []
         for food in food_list:
-            dist = abs(food[0] - middle_x)
+            dist = abs(food[0] - self.middle_x)
             food_with_dist.append((dist, food))
         food_with_dist.sort()
         return [food for _, food in food_with_dist]
     #TODO: Private method? Of in andere scope?
     def get_border_dist(self, game_state, pos):
-        #FIXME: Code duplication with compute_home_positions => helper function in parent class
-        middle_x = (game_state.data.layout.width - 1) // 2 if self.red else game_state.data.layout.width // 2
         height = game_state.data.layout.height
-        border_cells = [(middle_x, y) for y in range(height-1) if not game_state.has_wall(middle_x,y)]
+        border_cells = [(self.middle_x, y) for y in range(height-1) if not game_state.has_wall(self.middle_x,y)]
         if not border_cells:
             return 0
         return min(self.get_maze_distance(pos, bc) for bc in border_cells)
@@ -401,18 +398,7 @@ class OffensiveReflexAgent(ReflexCaptureAgent):
         Wordt in de register_initial_state gerund en opgeslagen als een lijst.
         """
         layout = game_state.data.layout
-        # TODO: Dit is een iets properdere versie dan wat ik voordien in de defensive agent heb gedaan.
-        #       Misschien daar ook aanpassen zodat het wat cleaner leest/oogt
-        # kolom vanaf waar we technisch gezien "home" zijn, afhankelijk van team.
-        #TODO: code duplicatie met middle_x
-        home_x = (layout.width - 1) // 2 if self.red else layout.width // 2
-        #TODO: implementatie als een set in plaats van lijst voor snellere membership acces? Zou normaal toch geen duplicate coördinaten moeten bevatten
-        return [
-            (home_x, y)
-            # de effectief bewandelbare maze rij-coördinaten zijn tussen 1 en de layout-hoogte -1 want muren aan de randen
-            for y in range(1, layout.height - 1)
-            if not game_state.has_wall(home_x, y)
-        ]
+        return [(self.middle_x, y) for y in range(1, layout.height - 1) if not game_state.has_wall(self.middle_x, y)]
 
     def _distance_to_home_position(self, pos):
         #TODO Eng docstring
