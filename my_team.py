@@ -330,14 +330,9 @@ class DefensiveReflexAgent(ReflexCaptureAgent):
         return features
 
     def get_weights(self, game_state, action):
-        #TODO: zie in welke scope is_scared best te zetten. Indien op andere plekken nuttig, hoger in de scope
-        #FIXME: is_scared doesn't need if
-        def is_scared():
-            if game_state.get_agent_state(self.index).scared_timer > 0:
-                return True
-            else:
-                return False
-        if is_scared():
+
+        # weights for when the agent is scared
+        if game_state.get_agent_state(self.index).scared_timer > 0:
             return {'invader_distance': 5,
                     'trapped_invader_distance': 50,
                     'raid_food_dist': -10,
