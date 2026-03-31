@@ -198,16 +198,14 @@ class DefensiveReflexAgent(ReflexCaptureAgent):
         draw_bottlenecks()
     #TODO: Private method? Of in andere scope?
     def find_bottlenecks(self, game_state):
-        #FIXME: remove condition by just returning all([...]) + in seperate helper function?
-        def pos_is_gate(row,col,game_state):
-            if all([not game_state.has_wall(col, row),
+        #FIXME: in seperate helper function?
+        def position_is_gate(row,col,game_state):
+            return all([not game_state.has_wall(col, row),
                     not game_state.has_wall(col + 1, row),
                     not game_state.has_wall(col - 1, row),
                     game_state.has_wall(col, row - 1),
-                    game_state.has_wall(col, row + 1)]):
-                return True
-            else:
-                return False
+                    game_state.has_wall(col, row + 1)])
+
         #FIXME: middle_x is computed in 3 seperate functions (code duplication) -> helper function
         middle_x = (game_state.data.layout.width - 1) // 2 if self.red else game_state.data.layout.width // 2
         defense_midfield_x = middle_x - middle_x // 4 if self.red else middle_x + middle_x // 4
@@ -220,7 +218,7 @@ class DefensiveReflexAgent(ReflexCaptureAgent):
 
         for col in colrange:
             for row in range(1,maze_height - 1 ):
-                if pos_is_gate(row,col,game_state):
+                if position_is_gate(row,col,game_state):
                     result.append((col, row))
         self.bottleneck_positions = result
     #TODO: Private method? Of in andere scope?
