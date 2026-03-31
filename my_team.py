@@ -56,10 +56,8 @@ def create_team(first_index, second_index, is_red,
 ##########
 
 class ReflexCaptureAgent(CaptureAgent):
-    """
-    A base class for reflex agents that choose score-maximizing actions
-    """
-
+    """A base class for reflex agents that choose score-maximizing actions."""
+#TODO: docstring voor init, uitleg van init variabelen
     def __init__(self, index, time_for_computing=.1):
         super().__init__(index, time_for_computing)
         self.start = None
@@ -73,18 +71,16 @@ class ReflexCaptureAgent(CaptureAgent):
         self.compute_dead_ends()
 
     def _get_walkable_neighbours(self, cell):
-        """
-        Returns all non-wall positions directly neighbouring cell.
-        """
+        """ Return all non-wall positions directly neighboring cell."""
         x, y = cell
         return [(x + dx, y + dy) for dx, dy in self.cardinal_distances if not self.walls[x + dx][y + dy]]
     #TODO: Private methode? Zou in principe enkel intern (of door subklassen) gecalled moeten worden
     def compute_dead_ends(self):
-        """
-        Identifies dead-end cells in a maze and records how deep each one is. 
-        A cell with depth 1 only has one neighbouring walkable cell. A cell with depth n is a corridor of length n.
+        """Identify dead-end cells in a maze and records how deep each one is.
+
+        A cell with depth 1 only has one neighboring walkable cell. A cell with depth n is a corridor of length n.
         Uses a BFS-like algorithm: fill the queue with all cells with depth 1 (dead-end tips), 
-        reduce neighbouring degrees and propagate until no further dead ends are found.
+        reduce neighboring degrees and propagate until no further dead ends are found.
         """
         neighbours = {}
         degree = {}
@@ -117,9 +113,7 @@ class ReflexCaptureAgent(CaptureAgent):
                     self.debug_draw(neighbour, color=(224,33,216))
 
     def choose_action(self, game_state):
-        """
-        Picks among the actions with the highest Q(s,a).
-        """
+        """ Picks among the actions with the highest Q(s,a). """
         actions = game_state.get_legal_actions(self.index)
 
         # You can profile your evaluation time by uncommenting these lines
@@ -147,9 +141,7 @@ class ReflexCaptureAgent(CaptureAgent):
         return random.choice(best_actions)
 
     def get_successor(self, game_state, action):
-        """
-        Finds the next successor which is a grid position (location tuple).
-        """
+        """Finds the next successor which is a grid position (location tuple)."""
         successor = game_state.generate_successor(self.index, action)
         pos = successor.get_agent_state(self.index).get_position()
         if pos != nearest_point(pos):
@@ -159,27 +151,21 @@ class ReflexCaptureAgent(CaptureAgent):
             return successor
 
     def evaluate(self, game_state, action):
-        """
-        Computes a linear combination of features and feature weights
-        """
+        """Compute a linear combination of features and feature weights."""
         features = self.get_features(game_state, action)
         weights = self.get_weights(game_state, action)
         return features * weights
 
     def get_features(self, game_state, action):
-        """
-        Returns a counter of features for the state
-        """
+        """Return a counter of features for the state"""
         features = util.Counter()
         successor = self.get_successor(game_state, action)
         features['successor_score'] = self.get_score(successor)
         return features
 
     def get_weights(self, game_state, action):
-        """
-        Normally, weights do not depend on the game state.  They can be either
-        a counter or a dictionary.
-        """
+        """Return a counter of weights for the features of the state"""
+
         return {'successor_score': 1.0}
 
 class DefensiveReflexAgent(ReflexCaptureAgent):
