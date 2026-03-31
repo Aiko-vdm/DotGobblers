@@ -62,11 +62,13 @@ class ReflexCaptureAgent(CaptureAgent):
         super().__init__(index, time_for_computing)
         self.start = None
         self.cardinal_distances = [(1, 0), (0, 1), (-1, 0), (0, -1)]
+        self.walls = None
+        self.dead_ends = {}
+        
 
     def register_initial_state(self, game_state):
         self.start = game_state.get_agent_position(self.index)
         self.walls = game_state.get_walls()
-        self.dead_ends = {}
         CaptureAgent.register_initial_state(self, game_state)
         self.compute_dead_ends()
 
@@ -487,7 +489,7 @@ class OffensiveReflexAgent(ReflexCaptureAgent):
 
         while not pq.is_empty():
             current_cell = pq.pop()
-            if current_cell in visited: 
+            if current_cell in visited:
                 continue
             visited.add(current_cell)
             if current_cell == target:
