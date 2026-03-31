@@ -380,17 +380,37 @@ class OffensiveReflexAgent(ReflexCaptureAgent):
   but it is by no means the best or only way to build an offensive agent.
   """
     def __init__(self, index, time_for_computing=.1):
+        """
+        position_history -- a list that stores the last n positions with n defined by position_history_length, used for anti-oscillation
+        position_history_length -- the length of the last n positions stored in position_history
+        home_positions -- legal positions where the agent can return home
+        steps_on_own_half -- number of steps taken on team side
+        initial_time_left -- the total game time at the start of a game
+        food_cluster_radius -- the radius used to detect a cluster
+        cluster_size_score_factor -- score used to reward bigger clusters
+        observable_distance -- from this distance, you can either chase or be chased due to observable distance
+        endgame_home_slack -- time offset given for endgame strategy. Increase tot start the endgame strategy earlier.
+        invader_close_distance -- max distance to attack enemy invaders when on own side
+        dead_end_danger_scale -- a number multiplied with the depth of dead ends to give escape margin from dead-ends
+
+        """
         super().__init__(index, time_for_computing)
-        self.pos_history = []
-        self.pos_hist_len = 4
-        self.steps_on_own_half = 0
-        self.initial_timeleft = 1200
+        self.position_history = []
+        self.position_history_length = 4
         self.home_positions = None
+        self.steps_on_own_half = 0
+        self.initial_time_left = 1200
+        self.food_cluster_radius = 2
+        self.cluster_size_score_factor = 2
+        self.observable_distance = 5
+        self.endgame_home_slack = 50
+        self.invader_close_distance = 3
+        self.dead_end_danger_factor = 1.5
+
 
     def register_initial_state(self, game_state):
-        #FIXME: variabelen die in init kunnen mss in init
         super().register_initial_state(game_state)
-
+        #TODO: Eng
         # bereken op voorhand de plekken waar we terug naar huis kunnen gaan
         self.home_positions = self._compute_home_positions(game_state)
 
@@ -422,7 +442,7 @@ class OffensiveReflexAgent(ReflexCaptureAgent):
         """
         return min(self.get_maze_distance(pos, home_pos) for home_pos in self.home_positions)
 
-    def _best_food_target(self, game_state, my_pos, food_list, defenders, radius=2):
+    def _best_food_target(self, game_state, my_pos, food_list, defenders):
         #TODO: Eng docstring
         """
         Helper functie die helpt met bepalen wat de beste food-target is op dit moment.
@@ -438,7 +458,7 @@ class OffensiveReflexAgent(ReflexCaptureAgent):
         for food in food_list:
             count = 0
             for rest_food in food_list:
-                if self.get_maze_distance(food, rest_food) <= radius:
+                if self.get_maze_distance(food, rest_food) <= self.food_cluster_radius:
                     count += 1
             clusters.append((food, count))
 
@@ -448,7 +468,7 @@ class OffensiveReflexAgent(ReflexCaptureAgent):
         # Ga voor elke food na welke de beste is op basis van de dijkstra measure
         for food, size in clusters:
             path_cost = self._dijkstra_distance(game_state, my_pos, food, defenders)
-            score = path_cost - (size * 2)
+            score = path_cost - (size * self.cluster_size_score_factor)
             if score < best_cost:
                 best_cost = score
                 best_food = food
@@ -457,19 +477,19 @@ class OffensiveReflexAgent(ReflexCaptureAgent):
         return best_food, best_cluster_size, best_cost
     
     def _cell_danger_penalty(self, cell, defenders, danger_radius, penalty_weight):
-        """
-        Computes a danger penalty for a given cell based on the proximity of active defenders.  
+        """Compute a danger penalty for a given cell based on the proximity of active enemy defenders.
+
         The closer a defender is to the cell, the bigger the penalty. 
-        Returns 0 if there's no active defender within the danger_radius of the cell.
+        Return 0 if there's no active defender within the danger_radius of the cell.
         """
         min_dist = min(self.get_maze_distance(cell, defender.get_position()) for defender in defenders)
         return max(0, danger_radius - min_dist) * penalty_weight
-    
-    def _dijkstra_distance(self, game_state, start, target, defenders, danger_radius=5, penalty_weight=10):
-        """
-         Computes the cost of the shortest path from start to target using a penalty-weighted Dijkstra. 
-         Paths passing near active defenders are penalised proportionally to their proximity.
-         Falls back to maze distance when there are no defenders or all of the defenders are outside the danger_radius of start. 
+    #TODO refactor functie calls -> game_state nu een unused var
+    def _dijkstra_distance(self,game_state, start, target, defenders, danger_radius=5, penalty_weight=10):
+        """Compute the cost of the shortest path from start to target using a penalty-weighted Dijkstra.
+
+         Paths passing near active defenders are penalized proportionally to their proximity.
+         Fall back to maze distance when there are no defenders or all of the defenders are outside the danger_radius of start.
         """
         unreachable = float('inf')
 
@@ -506,10 +526,10 @@ class OffensiveReflexAgent(ReflexCaptureAgent):
 
         if my_pos is not None:
             # record positie
-            self.pos_history.append(my_pos)
+            self.position_history.append(my_pos)
             # we houden slechts een bepaald aantal posities vast
-            if len(self.pos_history) > self.pos_hist_len:
-                self.pos_history.pop(0)
+            if len(self.position_history) > self.position_history_length:
+                self.position_history.pop(0)
 
         # counter gebruikt om bij te houden hoe lang pacman aan zijn eigen kant gebruikt
         # We willen een tradeoff hebben dat pacman soms aan zijn kant blijft om de ocassionele vijand te capturen
@@ -524,10 +544,10 @@ class OffensiveReflexAgent(ReflexCaptureAgent):
         legal_actions = [action for action in actions if action != Directions.STOP]
 
         # Anti-oscillation
-        if len(self.pos_history) >= 4:
+        if len(self.position_history) >= self.position_history_length:
             # detectie: tussen twee posities geoscilleerd
-            if (self.pos_history[-1] == self.pos_history[-3] and
-                    self.pos_history[-2] == self.pos_history[-4]):
+            if (self.position_history[-1] == self.position_history[-3] and
+                    self.position_history[-2] == self.position_history[-4]):
                 current_direction = game_state.get_agent_state(self.index).configuration.direction
                 # check voor legale acties die
                 non_reverse = [
@@ -548,6 +568,7 @@ class OffensiveReflexAgent(ReflexCaptureAgent):
         best_actions = [action for action, value in zip(legal_actions, values) if value == max_value]
 
         food_left = len(self.get_food(game_state).as_list())
+        #TODO: magische constante (2)
         if food_left <= 2:
             best_dist = 9999
             best_action = None
@@ -586,15 +607,12 @@ class OffensiveReflexAgent(ReflexCaptureAgent):
         is_chased = False
         closest_defender_dist = float('inf')
         if active_defenders:
-            #TODO: we gebruiken hier maze distance, maar observeerbaarheid hangt af van manhattan distance
-            #      het kan zijn dat de maze distance hier tekkortschiet, enemies kunnen ons al eerder zien en beginnen chasen?
             defender_dists = [self.get_maze_distance(my_pos, a.get_position()) for a in active_defenders]
             closest_defender_dist = min(defender_dists)
-            is_chased = closest_defender_dist <= 5
+            is_chased = closest_defender_dist <= self.observable_distance
 
-        #TODO: document reasoning voor 5 en 10
-        if state.is_pacman and closest_defender_dist <= 5:
-            features['ghost_proximity'] = 10 - closest_defender_dist
+        if state.is_pacman and closest_defender_dist <= self.observable_distance:
+            features['ghost_proximity'] = self.observable_distance * 2 - closest_defender_dist
 
         if my_pos == self.start and prev_pos != self.start:
             features['dont_die'] = 1
@@ -624,7 +642,7 @@ class OffensiveReflexAgent(ReflexCaptureAgent):
         time_left = successor.data.timeleft
         # urgency vb: low urgency begin van spel → 1 - (1200/1200) = 0
         # hoge urgency einde van spel → 1 - (400/1200) = 0.7 (1 is hoogste urgency)
-        urgency = 1 - (time_left / self.initial_timeleft)
+        urgency = 1 - (time_left / self.initial_time_left)
         # in mentaliteit van evaluatie ook te zien als maat voor "hoe snel kan ik food in cashen?"
         distance_to_home = self._distance_to_home_position(my_pos)
 
@@ -640,7 +658,7 @@ class OffensiveReflexAgent(ReflexCaptureAgent):
         #       (we doen de afstand plust een 'slack window', want gewoon de afstand kan te nipt zijn gezien er onderweg nog obstakels kunnen voordoen)
         # zo ja: kijken we naar de actie: brengt het me dichter bij huis? Zo ja, cash in now!!
         prev_distance_to_home = self._distance_to_home_position(prev_pos)
-        if carrying > 0 and time_left <= prev_distance_to_home + 50:
+        if carrying > 0 and time_left <= prev_distance_to_home + self.endgame_home_slack:
             if distance_to_home < prev_distance_to_home:
                 features['cash_in_now'] = 1
 
@@ -676,7 +694,7 @@ class OffensiveReflexAgent(ReflexCaptureAgent):
 
         if my_pos in self.dead_ends:
             depth = self.dead_ends[my_pos]
-            if closest_defender_dist <= depth * 1.5:
+            if closest_defender_dist <= depth * self.dead_end_danger_factor:
                 features['dead_end'] = 1
 
 
@@ -686,7 +704,7 @@ class OffensiveReflexAgent(ReflexCaptureAgent):
             if invaders:
                 invader_distances = [self.get_maze_distance(my_pos, a.get_position()) for a in invaders]
                 min_invader_dist = min(invader_distances)
-                if min_invader_dist <= 3:
+                if min_invader_dist <= self.invader_close_distance:
                     # voor goedkope defensieve acties als er vijand op eigen terrein is
                     features['close_invader_distance'] = min_invader_dist
 
