@@ -275,9 +275,7 @@ class DefensiveReflexAgent(ReflexCaptureAgent):
             defenders = [a for a in enemies if not a.is_pacman and a.get_position() is not None]
             active_defenders = [a for a in defenders if a.scared_timer == 0]
             is_chased = False
-            #FIXME: unused variables
-            closest_defender_dist = float('inf')
-            carrying = successor.get_agent_state(self.index).num_carrying
+
             if active_defenders:
                 defender_dists = [self.get_maze_distance(my_pos, a.get_position()) for a in active_defenders]
                 closest_defender_dist = min(defender_dists)
