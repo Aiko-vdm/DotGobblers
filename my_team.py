@@ -187,6 +187,8 @@ class DefensiveReflexAgent(ReflexCaptureAgent):
         super().register_initial_state(game_state)
         self.previous_food = self.get_food_you_are_defending(game_state).as_list()
         self.find_bottlenecks(game_state)
+        # Flush any memory from previous games
+        self.last_eaten_food = None
         #TODO: betere locatie voor deze procedure?
         def draw_bottlenecks():
             """Draw the bottleneck locations"""
