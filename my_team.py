@@ -187,7 +187,7 @@ class DefensiveReflexAgent(ReflexCaptureAgent):
         super().register_initial_state(game_state)
         self.previous_food = self.get_food_you_are_defending(game_state).as_list()
         self.find_bottlenecks(game_state)
-        # Flush any memory from previous games
+        # Flush any memory from previous games, see commit 28a1fa for more details
         self.last_eaten_food = None
         #TODO: betere locatie voor deze procedure?
         def draw_bottlenecks():
@@ -392,6 +392,10 @@ class OffensiveReflexAgent(ReflexCaptureAgent):
     def register_initial_state(self, game_state):
         super().register_initial_state(game_state)
         self.home_positions = self._compute_home_positions(game_state)
+        # Flush memory from previous games, see commit 28a1fa for more details
+        self.position_history = []
+        self.steps_on_own_half = 0
+
 
     def _compute_home_positions(self, game_state):
         """
