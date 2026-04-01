@@ -125,7 +125,8 @@ class ReflexCaptureAgent(CaptureAgent):
         best_actions = [a for a, v in zip(actions, values) if v == max_value]
 
         food_left = len(self.get_food(game_state).as_list())
-
+        #TODO Refactor: veel te complexe code voor wat het doet. Beter samen te vatten in list-comprehensions
+        # + dist => distance en pos => position
         if food_left <= 2:
             best_dist = 9999
             best_action = None
@@ -143,6 +144,7 @@ class ReflexCaptureAgent(CaptureAgent):
     def get_successor(self, game_state, action):
         """Finds the next successor which is a grid position (location tuple)."""
         successor = game_state.generate_successor(self.index, action)
+        #TODO: pos => position
         pos = successor.get_agent_state(self.index).get_position()
         if pos != nearest_point(pos):
             # Only half a grid position was covered
@@ -169,6 +171,7 @@ class ReflexCaptureAgent(CaptureAgent):
         return {'successor_score': 1.0}
 
 class DefensiveReflexAgent(ReflexCaptureAgent):
+    #TODO: docstring aanpassen
     """
     A reflex agent that keeps its side Pacman-free. Again,
     this is to give you an idea of what a defensive agent
@@ -186,7 +189,7 @@ class DefensiveReflexAgent(ReflexCaptureAgent):
         super().register_initial_state(game_state)
         self.previous_food = self.get_food_you_are_defending(game_state).as_list()
         self.find_bottlenecks(game_state)
-
+        #TODO: betere locatie voor deze procedure?
         def draw_bottlenecks():
             """Draw the bottleneck locations"""
             for bottleneck in self.bottleneck_positions:
@@ -201,7 +204,9 @@ class DefensiveReflexAgent(ReflexCaptureAgent):
         of the maze.
         """
         #FIXME: in seperate helper function?
+        #TODO: rename col -> column
         def position_is_gate(row,col,game_state):
+            #TODO: docstring
             return all([not game_state.has_wall(col, row),
                     not game_state.has_wall(col + 1, row),
                     not game_state.has_wall(col - 1, row),
@@ -211,11 +216,11 @@ class DefensiveReflexAgent(ReflexCaptureAgent):
         quarterfield_x = self.middle_x - (self.middle_x // 4) if self.red else self.middle_x + (self.middle_x // 4)
         result = []
         maze_height = game_state.data.layout.height
-
+        #TODO: rename col* -> column
         blue_colrange = range(self.middle_x, quarterfield_x)
         red_colrange = range(quarterfield_x, self.middle_x)
         colrange = red_colrange if self.red else blue_colrange
-
+        #TODO: rename col -> column
         for col in colrange:
             for row in range(1,maze_height - 1 ):
                 if position_is_gate(row,col,game_state):
@@ -223,6 +228,7 @@ class DefensiveReflexAgent(ReflexCaptureAgent):
         self.bottleneck_positions = result
     #TODO: Private method? Of in andere scope?
     def get_food_close_to_border(self, game_state):
+        #TODO: docstring
         food_list = self.get_food(game_state).as_list()
         food_with_dist = []
         for food in food_list:
@@ -231,7 +237,9 @@ class DefensiveReflexAgent(ReflexCaptureAgent):
         food_with_dist.sort()
         return [food for _, food in food_with_dist]
     #TODO: Private method? Of in andere scope?
+    #TODO: rename pos => position + bc => border_cell?
     def get_border_dist(self, game_state, pos):
+        #TODO: docstring
         height = game_state.data.layout.height
         border_cells = [(self.middle_x, y) for y in range(height-1) if not game_state.has_wall(self.middle_x,y)]
         if not border_cells:
@@ -239,6 +247,7 @@ class DefensiveReflexAgent(ReflexCaptureAgent):
         return min(self.get_maze_distance(pos, bc) for bc in border_cells)
 
     def get_features(self, game_state, action):
+        #TODO: opslitsen in hulpprocedures? Of op zijn minst code blocks benoemen
         features = util.Counter()
         current_food = self.get_food_you_are_defending(game_state).as_list()
 
@@ -259,7 +268,7 @@ class DefensiveReflexAgent(ReflexCaptureAgent):
         self.previous_food = current_food
 
         successor = self.get_successor(game_state, action)
-        #TODO: onderstaande variabelen meermaals gebruikt doorheen code
+        #TODO: onderstaande variabelen meermaals gebruikt doorheen code + vermijd afkortingen
         my_state = successor.get_agent_state(self.index)
         my_pos = my_state.get_position()
         scared_timer = game_state.get_agent_state(self.index).scared_timer
@@ -268,6 +277,7 @@ class DefensiveReflexAgent(ReflexCaptureAgent):
         retreat_threshold = scared_timer <= self.get_border_dist(game_state, my_pos)
         if is_scared:
             #FIXME: We compute enemies/defenders/... in Offensive agent as well => helper function in parent class
+            #TODO: is_chased ook gebruikt in offensive agent --> helper in parent class
             enemies = [successor.get_agent_state(i) for i in self.get_opponents(successor)]
             defenders = [a for a in enemies if not a.is_pacman and a.get_position() is not None]
             active_defenders = [a for a in defenders if a.scared_timer == 0]
@@ -303,20 +313,24 @@ class DefensiveReflexAgent(ReflexCaptureAgent):
                 dists = [self.get_maze_distance(my_pos, a.get_position()) for a in invaders]
                 features['invader_distance'] = min(dists)
                 # Of those we see, how many are trapped in dead ends
+                # FIXME: bug
                 dist_trapped = [self.get_maze_distance(my_pos, a.get_position()) for a in enemies if a in self.dead_ends]
                 features['trapped_invader_distance'] = min(dist_trapped) if len(dist_trapped) > 0 else 0
 
             if action == Directions.STOP:
                 features['stop'] = 1
+            #TODO rev => reverse_action
             rev = Directions.REVERSE[game_state.get_agent_state(self.index).configuration.direction]
             if action == rev:
                 features['reverse'] = 1
 
             if len(invaders) == 0 and self.last_eaten_food is not None:
+                #TODO dist => distance
                 dist = self.get_maze_distance(my_pos, self.last_eaten_food)
                 features['distance_to_last_eaten_food'] = dist
 
             #distance to a bottleneck
+            #TODO _dist* => distance
             bottleneck_dist = [self.get_maze_distance(my_pos, bottleneck) for bottleneck in self.bottleneck_positions]
             features['bottleneck_distance'] = min(bottleneck_dist) if bottleneck_dist else 0
             #FIXME: Code duplication with offensive reflex => helper function in parent class
@@ -490,29 +504,25 @@ class OffensiveReflexAgent(ReflexCaptureAgent):
     def choose_action(self, game_state):
         my_pos = game_state.get_agent_state(self.index).get_position()
         state = game_state.get_agent_state(self.index)
-
+        # update position history
+        #TODO: is not None is hier denk ik overbodig, 'if my_pos' evalueert ook naar False als None
         if my_pos is not None:
-            # record positie
             self.position_history.append(my_pos)
-            # we houden slechts een bepaald aantal posities vast
             if len(self.position_history) > self.position_history_length:
                 self.position_history.pop(0)
 
-        # counter gebruikt om bij te houden hoe lang pacman aan zijn eigen kant gebruikt
-        # We willen een tradeoff hebben dat pacman soms aan zijn kant blijft om de ocassionele vijand te capturen
-        # maar dit mag ook niet te lang oplopen zodat het objectief dots eten blijft
+        # count steps on own side
         if not state.is_pacman:
             self.steps_on_own_half += 1
         else:
             self.steps_on_own_half = 0
 
         actions = game_state.get_legal_actions(self.index)
-        # filteren van stop, is zeer zelden een nuttige actie voor de offensive
         legal_actions = [action for action in actions if action != Directions.STOP]
 
         # Anti-oscillation
         if len(self.position_history) >= self.position_history_length:
-            # detectie: tussen twee posities geoscilleerd
+            # detect when we oscillate between two positions and if so
             if (self.position_history[-1] == self.position_history[-3] and
                     self.position_history[-2] == self.position_history[-4]):
                 current_direction = game_state.get_agent_state(self.index).configuration.direction
@@ -535,7 +545,6 @@ class OffensiveReflexAgent(ReflexCaptureAgent):
         best_actions = [action for action, value in zip(legal_actions, values) if value == max_value]
 
         food_left = len(self.get_food(game_state).as_list())
-        #TODO: magische constante (2)
         if food_left <= 2:
             best_dist = 9999
             best_action = None
@@ -555,15 +564,17 @@ class OffensiveReflexAgent(ReflexCaptureAgent):
         features = util.Counter()
         successor = self.get_successor(game_state, action)
         food_list = self.get_food(successor).as_list()
-
+        #TODO: rename 'state' to not confuse with other types of state (game state? current or future state? agent state?)
         state = successor.get_agent_state(self.index)
+        #TODO: rename my_position
         my_pos = state.get_position()
         if my_pos is None:
             return features
-
+        #TODO: rename previous_position
         prev_pos = game_state.get_agent_state(self.index).get_position()
         enemies = [successor.get_agent_state(i) for i in self.get_opponents(successor)]
         # defenders zijn tegenstanders aan de overkant die hun food verdedigen
+        #TODO: rename? zodat duidelijk dat het om enemy defenders gaat
         defenders = [a for a in enemies if not a.is_pacman and a.get_position() is not None]
         active_defenders = [a for a in defenders if a.scared_timer == 0]
         scared_defenders = [a for a in defenders if a.scared_timer > 0]
@@ -634,13 +645,18 @@ class OffensiveReflexAgent(ReflexCaptureAgent):
         capsules = self.get_capsules(successor)
         if capsules:
             capsule_dists = [self._dijkstra_distance(successor, my_pos, capsule, active_defenders) for capsule in capsules]
+            #TODO: rename distance_to_capsule
             features['dist_to_capsule'] = min(capsule_dists)
+            #TODO: magic constant 4
             if is_chased or carrying >= 4:
                 # hoe meer je draagt, hoe meer je te verliezen hebt, hoe interessanter het wordt om defense van de tegenstander uit te schakelen
+                #TODO: remove factor
                 features['capsule_pressure'] = 1 * carrying
 
         if scared_defenders:
+            #TODO: rename lowest_scared_timer
             min_scared_timer = min(a.scared_timer for a in scared_defenders)
+            #TODO magic constant 4
             if min_scared_timer >= 4:
                 # geen penalty voor in een dead end zolang defenders scared zijn
                 features['dead_end'] = 0
@@ -651,10 +667,12 @@ class OffensiveReflexAgent(ReflexCaptureAgent):
                     features['ate_scared_ghost'] = 1
                 else:
                     scared_dists = [self.get_maze_distance(my_pos, a.get_position()) for a in scared_defenders]
+                    #TODO: rename distance_to_scared_defender
                     features['dist_to_scared_defender'] = min(scared_dists)
 
         if active_defenders:
             for defender in active_defenders:
+                #TODO: rename defender_position
                 defender_pos = defender.get_position()
                 if my_pos == defender_pos:
                     features['walk_into_defender'] = 1
@@ -670,6 +688,7 @@ class OffensiveReflexAgent(ReflexCaptureAgent):
             features['steps_on_own_half'] = self.steps_on_own_half
             if invaders:
                 invader_distances = [self.get_maze_distance(my_pos, a.get_position()) for a in invaders]
+                #TODO rename: minimum_invader_distance
                 min_invader_dist = min(invader_distances)
                 if min_invader_dist <= self.invader_close_distance:
                     # voor goedkope defensieve acties als er vijand op eigen terrein is
