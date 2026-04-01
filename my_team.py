@@ -166,15 +166,18 @@ class ReflexCaptureAgent(CaptureAgent):
         return {'successor_score': 1.0}
 
 class DefensiveReflexAgent(ReflexCaptureAgent):
-    #TODO: docstring aanpassen
     """
-    A reflex agent that keeps its side Pacman-free. Again,
-    this is to give you an idea of what a defensive agent
-    could be like.  It is not the best or only way to make
-    such an agent.
+    A reflex agent that keeps its side Pacman-free. When an invader eats a capsule and the defensive reflex agent turns scared,
+    it crosses the border into the opponents part of the maze and tries to eat some food dots for as long it's scared. 
+    After its scared_timer runs out, the defensive agent returns to its normal defensive behaviour.
     """
-    #TODO: docstrings
+  
     def __init__(self, index, time_for_computing=.1):
+        """
+        bottleneck_positions -- narrow horizontal passages on team side used as priority patrol positions
+        last_eaten_food -- position of the most recently eaten food dot on team side, used to track the invader
+        previous_food -- snapshot of the defended food list from the previous turn, used to detect eaten food dots
+        """
         super().__init__(index, time_for_computing)
         self.bottleneck_positions = None
         self.last_eaten_food = None
@@ -190,6 +193,15 @@ class DefensiveReflexAgent(ReflexCaptureAgent):
             for bottleneck in self.bottleneck_positions:
                 self.debug_draw(bottleneck, color=(158,224,32))
         draw_bottlenecks()
+
+    def _position_is_gate(self,row,column,game_state):
+        """Returns True if the cell is a narrow horizontal passage: walkable horizontally but walled off vertically."""
+        return all([not game_state.has_wall(column, row),
+                    not game_state.has_wall(column + 1, row),
+                    not game_state.has_wall(column - 1, row),
+                    game_state.has_wall(column, row - 1),
+                    game_state.has_wall(column, row + 1)])
+    
     #TODO: Private method? Of in andere scope?
     def find_bottlenecks(self, game_state):
         """Look for bottleneck positions on team side and assign to self.bottleneck_positions
@@ -198,32 +210,21 @@ class DefensiveReflexAgent(ReflexCaptureAgent):
         These are detected by the position_is_gate function in the space between the middle and quarter-line
         of the maze.
         """
-        #FIXME: in seperate helper function?
-        #TODO: rename col -> column
-        def position_is_gate(row,col,game_state):
-            #TODO: docstring
-            return all([not game_state.has_wall(col, row),
-                    not game_state.has_wall(col + 1, row),
-                    not game_state.has_wall(col - 1, row),
-                    game_state.has_wall(col, row - 1),
-                    game_state.has_wall(col, row + 1)])
-
         quarterfield_x = self.middle_x - (self.middle_x // 4) if self.red else self.middle_x + (self.middle_x // 4)
         result = []
         maze_height = game_state.data.layout.height
-        #TODO: rename col* -> column
-        blue_colrange = range(self.middle_x, quarterfield_x)
-        red_colrange = range(quarterfield_x, self.middle_x)
-        colrange = red_colrange if self.red else blue_colrange
-        #TODO: rename col -> column
-        for col in colrange:
+        blue_columnrange = range(self.middle_x, quarterfield_x)
+        red_columnrange = range(quarterfield_x, self.middle_x)
+        columnrange = red_columnrange if self.red else blue_columnrange
+        
+        for column in columnrange:
             for row in range(1,maze_height - 1 ):
-                if position_is_gate(row,col,game_state):
-                    result.append((col, row))
+                if self._position_is_gate(row,column,game_state):
+                    result.append((column, row))
         self.bottleneck_positions = result
     #TODO: Private method? Of in andere scope?
     def get_food_close_to_border(self, game_state):
-        #TODO: docstring
+        """Returns all food pellets on the opponent's side sorted by distance to the border, closest first."""
         food_list = self.get_food(game_state).as_list()
         food_with_dist = []
         for food in food_list:
@@ -232,14 +233,13 @@ class DefensiveReflexAgent(ReflexCaptureAgent):
         food_with_dist.sort()
         return [food for _, food in food_with_dist]
     #TODO: Private method? Of in andere scope?
-    #TODO: rename pos => position + bc => border_cell?
-    def get_border_dist(self, game_state, pos):
-        #TODO: docstring
+    def get_border_dist(self, game_state, position):
+        """Returns the maze distance from position to the nearest walkable cell on the border between the two teams' halves."""
         height = game_state.data.layout.height
         border_cells = [(self.middle_x, y) for y in range(height-1) if not game_state.has_wall(self.middle_x,y)]
         if not border_cells:
             return 0
-        return min(self.get_maze_distance(pos, bc) for bc in border_cells)
+        return min(self.get_maze_distance(position, border_cell) for border_cell in border_cells)
 
     def get_features(self, game_state, action):
         #TODO: opslitsen in hulpprocedures? Of op zijn minst code blocks benoemen
@@ -257,9 +257,7 @@ class DefensiveReflexAgent(ReflexCaptureAgent):
                 if dist < min_dist:
                     min_dist = dist
                     closest = food
-            #FIXME: in init?
             self.last_eaten_food = closest
-        #FIXME: in init?
         self.previous_food = current_food
 
         successor = self.get_successor(game_state, action)
@@ -268,8 +266,7 @@ class DefensiveReflexAgent(ReflexCaptureAgent):
         my_pos = my_state.get_position()
         scared_timer = game_state.get_agent_state(self.index).scared_timer
         is_scared = scared_timer > 0
-        #FIXME: better variable naming: retreat_threshold sounds numeric
-        retreat_threshold = scared_timer <= self.get_border_dist(game_state, my_pos)
+        should_retreat = scared_timer <= self.get_border_dist(game_state, my_pos)
         if is_scared:
             #FIXME: We compute enemies/defenders/... in Offensive agent as well => helper function in parent class
             #TODO: is_chased ook gebruikt in offensive agent --> helper in parent class
@@ -285,7 +282,7 @@ class DefensiveReflexAgent(ReflexCaptureAgent):
             prev_pos = game_state.get_agent_state(self.index).get_position()
             if my_pos == self.start and prev_pos != self.start:
                 features['dont_die'] = 1
-            if scared_timer > retreat_threshold:
+            if scared_timer > should_retreat: #FIXME: should_retreat is a boolean, so should be 'if not should_retreat'
                 border_food = self.get_food_close_to_border(game_state)
                 if border_food:
                     dists = [self.get_maze_distance(my_pos, food) for food in border_food]
@@ -314,26 +311,24 @@ class DefensiveReflexAgent(ReflexCaptureAgent):
 
             if action == Directions.STOP:
                 features['stop'] = 1
-            #TODO rev => reverse_action
-            rev = Directions.REVERSE[game_state.get_agent_state(self.index).configuration.direction]
-            if action == rev:
+
+            reverse_action = Directions.REVERSE[game_state.get_agent_state(self.index).configuration.direction]
+            if action == reverse_action:
                 features['reverse'] = 1
 
             if len(invaders) == 0 and self.last_eaten_food is not None:
-                #TODO dist => distance
-                dist = self.get_maze_distance(my_pos, self.last_eaten_food)
-                features['distance_to_last_eaten_food'] = dist
+                distance = self.get_maze_distance(my_pos, self.last_eaten_food)
+                features['distance_to_last_eaten_food'] = distance
 
             #distance to a bottleneck
-            #TODO _dist* => distance
-            bottleneck_dist = [self.get_maze_distance(my_pos, bottleneck) for bottleneck in self.bottleneck_positions]
-            features['bottleneck_distance'] = min(bottleneck_dist) if bottleneck_dist else 0
+            bottleneck_distance = [self.get_maze_distance(my_pos, bottleneck) for bottleneck in self.bottleneck_positions]
+            features['bottleneck_distance'] = min(bottleneck_distance) if bottleneck_distance else 0
             #FIXME: Code duplication with offensive reflex => helper function in parent class
             capsules = self.get_capsules_you_are_defending(game_state)
             if capsules:
                 features['capsules'] = len(capsules)
-                capsule_dists = [self.get_maze_distance(my_pos, capsule) for capsule in capsules]
-                features['dist_to_capsule'] = max(capsule_dists)
+                capsule_distances = [self.get_maze_distance(my_pos, capsule) for capsule in capsules]
+                features['distance_to_capsule'] = max(capsule_distances)
 
 
         return features
@@ -356,7 +351,7 @@ class DefensiveReflexAgent(ReflexCaptureAgent):
                 'reverse': -2,
                 'distance_to_last_eaten_food': -20,
                 'bottleneck_distance': -15,
-                'dist_to_capsule': -10,
+                'distance_to_capsule': -10,
                 'capsules': 1000}
 
 class OffensiveReflexAgent(ReflexCaptureAgent):
@@ -639,9 +634,9 @@ class OffensiveReflexAgent(ReflexCaptureAgent):
         # er meer voedsel in bezit is (hogere risico situatie)
         capsules = self.get_capsules(successor)
         if capsules:
-            capsule_dists = [self._dijkstra_distance(successor, my_pos, capsule, active_defenders) for capsule in capsules]
+            ance = [self._dijkstra_distance(successor, my_pos, capsule, active_defenders) for capsule in capsules]
             #TODO: rename distance_to_capsule
-            features['dist_to_capsule'] = min(capsule_dists)
+            features['dist_to_capsule'] = min(ance)
             #TODO: magic constant 4
             if is_chased or carrying >= 4:
                 # hoe meer je draagt, hoe meer je te verliezen hebt, hoe interessanter het wordt om defense van de tegenstander uit te schakelen
