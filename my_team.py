@@ -263,10 +263,10 @@ class DefensiveReflexAgent(ReflexCaptureAgent):
         successor = self.get_successor(game_state, action)
         #TODO: onderstaande variabelen meermaals gebruikt doorheen code + vermijd afkortingen
         my_state = successor.get_agent_state(self.index)
-        my_pos = my_state.get_position()
+        my_position = my_state.get_position()
         scared_timer = game_state.get_agent_state(self.index).scared_timer
         is_scared = scared_timer > 0
-        should_retreat = scared_timer <= self.get_border_dist(game_state, my_pos)
+        should_retreat = scared_timer <= self.get_border_dist(game_state, my_position)
         if is_scared:
             #FIXME: We compute enemies/defenders/... in Offensive agent as well => helper function in parent class
             #TODO: is_chased ook gebruikt in offensive agent --> helper in parent class
@@ -276,21 +276,21 @@ class DefensiveReflexAgent(ReflexCaptureAgent):
             is_chased = False
 
             if active_defenders:
-                defender_dists = [self.get_maze_distance(my_pos, a.get_position()) for a in active_defenders]
+                defender_dists = [self.get_maze_distance(my_position, a.get_position()) for a in active_defenders]
                 closest_defender_dist = min(defender_dists)
                 is_chased = closest_defender_dist <= 5
             prev_pos = game_state.get_agent_state(self.index).get_position()
-            if my_pos == self.start and prev_pos != self.start:
+            if my_position == self.start and prev_pos != self.start:
                 features['dont_die'] = 1
             if scared_timer > should_retreat: #FIXME: should_retreat is a boolean, so should be 'if not should_retreat'
                 border_food = self.get_food_close_to_border(game_state)
                 if border_food:
-                    dists = [self.get_maze_distance(my_pos, food) for food in border_food]
+                    dists = [self.get_maze_distance(my_position, food) for food in border_food]
                     features['raid_food_dist'] = min(dists)
                 if is_chased:
-                    features['return_home'] = self.get_border_dist(game_state, my_pos)
+                    features['return_home'] = self.get_border_dist(game_state, my_position)
             else:
-                features['return_home'] = self.get_border_dist(game_state, my_pos)
+                features['return_home'] = self.get_border_dist(game_state, my_position)
         else:
             # Computes whether we're on defense (1) or offense (0)
             features['on_defense'] = 1
@@ -302,11 +302,11 @@ class DefensiveReflexAgent(ReflexCaptureAgent):
             invaders = [a for a in enemies if a.is_pacman and a.get_position() is not None]
             features['num_invaders'] = len(invaders)
             if len(invaders) > 0:
-                dists = [self.get_maze_distance(my_pos, a.get_position()) for a in invaders]
+                dists = [self.get_maze_distance(my_position, a.get_position()) for a in invaders]
                 features['invader_distance'] = min(dists)
                 # Of those we see, how many are trapped in dead ends
                 # FIXME: bug
-                dist_trapped = [self.get_maze_distance(my_pos, a.get_position()) for a in enemies if a in self.dead_ends]
+                dist_trapped = [self.get_maze_distance(my_position, a.get_position()) for a in enemies if a in self.dead_ends]
                 features['trapped_invader_distance'] = min(dist_trapped) if len(dist_trapped) > 0 else 0
 
             if action == Directions.STOP:
@@ -317,17 +317,17 @@ class DefensiveReflexAgent(ReflexCaptureAgent):
                 features['reverse'] = 1
 
             if len(invaders) == 0 and self.last_eaten_food is not None:
-                distance = self.get_maze_distance(my_pos, self.last_eaten_food)
+                distance = self.get_maze_distance(my_position, self.last_eaten_food)
                 features['distance_to_last_eaten_food'] = distance
 
             #distance to a bottleneck
-            bottleneck_distance = [self.get_maze_distance(my_pos, bottleneck) for bottleneck in self.bottleneck_positions]
+            bottleneck_distance = [self.get_maze_distance(my_position, bottleneck) for bottleneck in self.bottleneck_positions]
             features['bottleneck_distance'] = min(bottleneck_distance) if bottleneck_distance else 0
             #FIXME: Code duplication with offensive reflex => helper function in parent class
             capsules = self.get_capsules_you_are_defending(game_state)
             if capsules:
                 features['capsules'] = len(capsules)
-                capsule_distances = [self.get_maze_distance(my_pos, capsule) for capsule in capsules]
+                capsule_distances = [self.get_maze_distance(my_position, capsule) for capsule in capsules]
                 features['distance_to_capsule'] = max(capsule_distances)
 
 
@@ -412,7 +412,7 @@ class OffensiveReflexAgent(ReflexCaptureAgent):
         """
         return min(self.get_maze_distance(pos, home_pos) for home_pos in self.home_positions)
 
-    def _best_food_target(self, game_state, my_pos, food_list, defenders):
+    def _best_food_target(self, game_state, my_position, food_list, defenders):
         #TODO: Eng docstring
         """
         Helper functie die helpt met bepalen wat de beste food-target is op dit moment.
@@ -437,7 +437,7 @@ class OffensiveReflexAgent(ReflexCaptureAgent):
         best_cost = float('inf')
         # Ga voor elke food na welke de beste is op basis van de dijkstra measure
         for food, size in clusters:
-            path_cost = self._dijkstra_distance(game_state, my_pos, food, defenders)
+            path_cost = self._dijkstra_distance(game_state, my_position, food, defenders)
             score = path_cost - (size * self.cluster_size_score_factor)
             if score < best_cost:
                 best_cost = score
@@ -492,12 +492,12 @@ class OffensiveReflexAgent(ReflexCaptureAgent):
         return unreachable 
     
     def choose_action(self, game_state):
-        my_pos = game_state.get_agent_state(self.index).get_position()
+        my_position = game_state.get_agent_state(self.index).get_position()
         state = game_state.get_agent_state(self.index)
         # update position history
-        #TODO: is not None is hier denk ik overbodig, 'if my_pos' evalueert ook naar False als None
-        if my_pos is not None:
-            self.position_history.append(my_pos)
+        #TODO: is not None is hier denk ik overbodig, 'if my_position' evalueert ook naar False als None
+        if my_position is not None:
+            self.position_history.append(my_position)
             if len(self.position_history) > self.position_history_length:
                 self.position_history.pop(0)
 
@@ -556,9 +556,9 @@ class OffensiveReflexAgent(ReflexCaptureAgent):
         food_list = self.get_food(successor).as_list()
         #TODO: rename 'state' to not confuse with other types of state (game state? current or future state? agent state?)
         state = successor.get_agent_state(self.index)
-        #TODO: rename my_position
-        my_pos = state.get_position()
-        if my_pos is None:
+        #TODO: rename my_positionition
+        my_position = state.get_position()
+        if my_position is None:
             return features
         #TODO: rename previous_position
         prev_pos = game_state.get_agent_state(self.index).get_position()
@@ -575,14 +575,14 @@ class OffensiveReflexAgent(ReflexCaptureAgent):
         is_chased = False
         closest_defender_dist = float('inf')
         if active_defenders:
-            defender_dists = [self.get_maze_distance(my_pos, a.get_position()) for a in active_defenders]
+            defender_dists = [self.get_maze_distance(my_position, a.get_position()) for a in active_defenders]
             closest_defender_dist = min(defender_dists)
             is_chased = closest_defender_dist <= self.observable_distance
 
         if state.is_pacman and closest_defender_dist <= self.observable_distance:
             features['ghost_proximity'] = self.observable_distance * 2 - closest_defender_dist
 
-        if my_pos == self.start and prev_pos != self.start:
+        if my_position == self.start and prev_pos != self.start:
             features['dont_die'] = 1
         # directe reward, heeft invloed op het incashen van eten
         features['score'] = self.get_score(successor)
@@ -591,7 +591,7 @@ class OffensiveReflexAgent(ReflexCaptureAgent):
 
         best_food, best_cluster_size, best_cost = self._best_food_target(
             successor,
-            my_pos,
+            my_position,
             food_list,
             active_defenders,
         )
@@ -612,7 +612,7 @@ class OffensiveReflexAgent(ReflexCaptureAgent):
         # hoge urgency einde van spel → 1 - (400/1200) = 0.7 (1 is hoogste urgency)
         urgency = 1 - (time_left / self.initial_time_left)
         # in mentaliteit van evaluatie ook te zien als maat voor "hoe snel kan ik food in cashen?"
-        distance_to_home = self._distance_to_home_position(my_pos)
+        distance_to_home = self._distance_to_home_position(my_position)
 
         # meer food in bezit + langere afstand verhogen druk voor return home
         # urgency kan multipliceren tot x3
@@ -634,9 +634,9 @@ class OffensiveReflexAgent(ReflexCaptureAgent):
         # er meer voedsel in bezit is (hogere risico situatie)
         capsules = self.get_capsules(successor)
         if capsules:
-            ance = [self._dijkstra_distance(successor, my_pos, capsule, active_defenders) for capsule in capsules]
+            capsule_distance = [self._dijkstra_distance(successor, my_position, capsule, active_defenders) for capsule in capsules]
             #TODO: rename distance_to_capsule
-            features['dist_to_capsule'] = min(ance)
+            features['dist_to_capsule'] = min(capsule_distance)
             #TODO: magic constant 4
             if is_chased or carrying >= 4:
                 # hoe meer je draagt, hoe meer je te verliezen hebt, hoe interessanter het wordt om defense van de tegenstander uit te schakelen
@@ -653,10 +653,10 @@ class OffensiveReflexAgent(ReflexCaptureAgent):
                 prev_enemies = [game_state.get_agent_state(i) for i in self.get_opponents(game_state)]
                 prev_scared = [a for a in prev_enemies if not a.is_pacman and a.scared_timer > 0 and a.get_position() is not None]
                 prev_scared_positions = [a.get_position() for a in prev_scared]
-                if my_pos in prev_scared_positions:
+                if my_position in prev_scared_positions:
                     features['ate_scared_ghost'] = 1
                 else:
-                    scared_dists = [self.get_maze_distance(my_pos, a.get_position()) for a in scared_defenders]
+                    scared_dists = [self.get_maze_distance(my_position, a.get_position()) for a in scared_defenders]
                     #TODO: rename distance_to_scared_defender
                     features['dist_to_scared_defender'] = min(scared_dists)
 
@@ -664,11 +664,11 @@ class OffensiveReflexAgent(ReflexCaptureAgent):
             for defender in active_defenders:
                 #TODO: rename defender_position
                 defender_pos = defender.get_position()
-                if my_pos == defender_pos:
+                if my_position == defender_pos:
                     features['walk_into_defender'] = 1
 
-        if my_pos in self.dead_ends:
-            depth = self.dead_ends[my_pos]
+        if my_position in self.dead_ends:
+            depth = self.dead_ends[my_position]
             if closest_defender_dist <= depth * self.dead_end_danger_factor:
                 features['dead_end'] = 1
 
@@ -677,7 +677,7 @@ class OffensiveReflexAgent(ReflexCaptureAgent):
             # manier om 'camping' op eigen grondgebied tegen te gaan
             features['steps_on_own_half'] = self.steps_on_own_half
             if invaders:
-                invader_distances = [self.get_maze_distance(my_pos, a.get_position()) for a in invaders]
+                invader_distances = [self.get_maze_distance(my_position, a.get_position()) for a in invaders]
                 #TODO rename: minimum_invader_distance
                 min_invader_dist = min(invader_distances)
                 if min_invader_dist <= self.invader_close_distance:
