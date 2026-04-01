@@ -57,8 +57,14 @@ def create_team(first_index, second_index, is_red,
 
 class ReflexCaptureAgent(CaptureAgent):
     """A base class for reflex agents that choose score-maximizing actions."""
-#TODO: docstring voor init, uitleg van init variabelen
     def __init__(self, index, time_for_computing=.1):
+        """
+        start -- start position of the agent at the beginning of the game
+        cardinal_distances -- the four cardinal direction offsets used for neighbour lookups
+        walls -- grid of wall positions for the current maze layout
+        dead_ends -- maps each dead-end cell to its depth (populated by _compute_dead_ends)
+        middle_x -- x-coordinate of the border between the two teams' halves
+        """
         super().__init__(index, time_for_computing)
         self.start = None
         self.cardinal_distances = [(1, 0), (0, 1), (-1, 0), (0, -1)]
@@ -71,15 +77,15 @@ class ReflexCaptureAgent(CaptureAgent):
         self.start = game_state.get_agent_position(self.index)
         self.walls = game_state.get_walls()
         CaptureAgent.register_initial_state(self, game_state)
-        self.compute_dead_ends()
+        self._compute_dead_ends()
         self.middle_x = (game_state.data.layout.width - 1) // 2 if self.red else game_state.data.layout.width // 2
 
     def _get_walkable_neighbours(self, cell):
         """ Return all non-wall positions directly neighboring cell."""
         x, y = cell
         return [(x + dx, y + dy) for dx, dy in self.cardinal_distances if not self.walls[x + dx][y + dy]]
-    #TODO: Private methode? Zou in principe enkel intern (of door subklassen) gecalled moeten worden
-    def compute_dead_ends(self):
+    
+    def _compute_dead_ends(self):
         """Identify dead-end cells in a maze and records how deep each one is.
 
         A cell with depth 1 only has one neighboring walkable cell. A cell with depth n is a corridor of length n.
