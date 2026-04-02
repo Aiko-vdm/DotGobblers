@@ -280,11 +280,12 @@ class DefensiveReflexAgent(ReflexCaptureAgent):
             if active_defenders:
                 defender_distances = [self.get_maze_distance(my_position, a.get_position()) for a in active_defenders]
                 closest_defender_distance = min(defender_distances)
+                # TODO: zet self.observable_distance uit offensive in parent klas en gebruik hier in plaats van 5
                 is_chased = closest_defender_distance <= 5
             previous_position = game_state.get_agent_state(self.index).get_position()
             if my_position == self.start and previous_position != self.start:
                 features['dont_die'] = 1
-            if scared_timer > should_retreat: #FIXME: should_retreat is a boolean, so should be 'if not should_retreat'
+            if scared_timer > should_retreat: #FIXME: bug
                 border_food = self.get_food_close_to_border(game_state)
                 if border_food:
                     distances = [self.get_maze_distance(my_position, food) for food in border_food]
