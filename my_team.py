@@ -221,13 +221,13 @@ class DefensiveReflexAgent(ReflexCaptureAgent):
         self._find_bottlenecks(game_state)
         # Flush any memory from previous games, see commit 28a1fa for more details
         self.last_eaten_food = None
-        #TODO: betere locatie voor deze procedure?
-        def draw_bottlenecks():
-            """Draw the bottleneck locations"""
-            for bottleneck in self.bottleneck_positions:
-                self.debug_draw(bottleneck, color=(158,224,32))
-        draw_bottlenecks()
+        self._draw_bottlenecks()
 
+    def _draw_bottlenecks(self):
+        """Draw the bottleneck locations"""
+        for bottleneck in self.bottleneck_positions:
+            self.debug_draw(bottleneck, color=(158,224,32))
+    
     def _position_is_gate(self,row,column,game_state):
         """Returns True if the cell is a narrow horizontal passage: walkable horizontally but walled off vertically."""
         return all([not game_state.has_wall(column, row),
