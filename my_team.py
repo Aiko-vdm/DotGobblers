@@ -156,17 +156,19 @@ class ReflexCaptureAgent(CaptureAgent):
     def choose_action(self, game_state):
         """ Picks among the actions with the highest Q(s,a). """
         actions = game_state.get_legal_actions(self.index)
-        values = [self.evaluate(game_state, action) for action in actions]
-        max_value = max(values)
-        best_actions = [action for action, value in zip(actions, values) if value == max_value]
-
         food_left = len(self.get_food(game_state).as_list())
         # Endgame: when only 2 or fewer food dots remain, picks action that take agent as close as possible to start position
         if food_left <= 2:
             return min(actions, key=lambda action: self.get_maze_distance(self.start, self.get_successor(game_state, action).get_agent_position(self.index)))
     
-        return random.choice(best_actions)
-
+        return random.choice(self._evaluate_actions(game_state,actions))
+    
+    def _evaluate_actions(self, game_state, actions):
+        """ Return all actions form actions with the highest Q-value """
+        values = [self.evaluate(game_state, action) for action in actions]
+        max_value = max(values)
+        return [action for action, value in zip(actions, values) if value == max_value]
+    
     def get_successor(self, game_state, action):
         """Finds the next successor which is a grid position (location tuple)."""
         successor = game_state.generate_successor(self.index, action)
@@ -549,31 +551,11 @@ class OffensiveReflexAgent(ReflexCaptureAgent):
                 if non_reverse:
                     return random.choice(non_reverse)
 
-        # FIXME: Onderstaande code is identiek aan de code in de parent klasse,
-        #  enkel filteren we in huidige choose_actions nog de stop uit de legal actions. Idealieter hergebruiken we code met super()
-        #   maar weet nog niet zeker wat de beste manier is om dit aan te pakken
-        #   Een suggestie is om in de parrent klasse de hele control loop in een functie te zetten die de legale acties meekrijgt
-        #   Zo kunnen we super() callen met de gefilterde acties.  Nadeel is dat defensive dan ook 2-3 lijnen extra code nodig heeft
-        #   maar dat is minder impactvol dan de 20 lijnen extra code hieronder (+ andere refactor opties die ik in gedachte had zijn nog intrusiever)
-        values = [self.evaluate(game_state, action) for action in legal_actions]
-        max_value = max(values)
-        best_actions = [action for action, value in zip(legal_actions, values) if value == max_value]
-
         food_left = len(self.get_food(game_state).as_list())
         if food_left <= 2:
-            best_dist = 9999
-            best_action = None
-            for action in legal_actions:
-                successor = self.get_successor(game_state, action)
-                pos2 = successor.get_agent_position(self.index)
-                dist = self.get_maze_distance(self.start, pos2)
-                if dist < best_dist:
-                    best_action = action
-                    best_dist = dist
-            if best_action is not None:
-                return best_action
+            return min(legal_actions, key=lambda action: self.get_maze_distance(self.start, self.get_successor(game_state, action).get_agent_position(self.index)))
 
-        return random.choice(best_actions)
+        return random.choice(self._evaluate_actions(game_state, legal_actions))
 
     def get_features(self, game_state, action):
         features = util.Counter()
