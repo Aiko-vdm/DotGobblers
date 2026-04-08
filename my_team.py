@@ -294,15 +294,12 @@ class DefensiveReflexAgent(ReflexCaptureAgent):
         self.previous_food = current_food
 
         successor = self.get_successor(game_state, action)
-        #TODO: onderstaande variabelen meermaals gebruikt doorheen code + vermijd afkortingen
         my_state = successor.get_agent_state(self.index)
         my_position = my_state.get_position()
         scared_timer = game_state.get_agent_state(self.index).scared_timer
         is_scared = scared_timer > 0
         should_retreat = scared_timer <= self._get_border_dist(game_state, my_position)
         if is_scared:
-            #FIXME: We compute enemies/defenders/... in Offensive agent as well => helper function in parent class
-            #TODO: is_chased ook gebruikt in offensive agent --> helper in parent class
             enemy_states = self._get_enemy_states(successor)
             active_defenders = self._get_active_defenders(enemy_states)
             is_chased = self._is_chased(my_position, active_defenders)
@@ -351,7 +348,6 @@ class DefensiveReflexAgent(ReflexCaptureAgent):
             #distance to a bottleneck
             bottleneck_distance = [self.get_maze_distance(my_position, bottleneck) for bottleneck in self.bottleneck_positions]
             features['bottleneck_distance'] = min(bottleneck_distance) if bottleneck_distance else 0
-            #FIXME: Code duplication with offensive reflex => helper function in parent class
             capsules = self.get_capsules_you_are_defending(game_state)
             if capsules:
                 features['capsules'] = len(capsules)
