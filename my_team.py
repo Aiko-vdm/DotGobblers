@@ -64,6 +64,7 @@ class ReflexCaptureAgent(CaptureAgent):
         walls -- grid of wall positions for the current maze layout
         dead_ends -- maps each dead-end cell to its depth (populated by _compute_dead_ends)
         middle_x -- x-coordinate of the border between the two teams' halves
+        observable_distance -- from this distance, you can either chase or be chased due to observable distance
         """
         super().__init__(index, time_for_computing)
         self.start = None
@@ -71,6 +72,7 @@ class ReflexCaptureAgent(CaptureAgent):
         self.walls = None
         self.dead_ends = {}
         self.middle_x = None
+        self.observable_distance = 5
 
 
     def register_initial_state(self, game_state):
@@ -122,7 +124,35 @@ class ReflexCaptureAgent(CaptureAgent):
                     self.dead_ends[neighbour] = self.dead_ends[walkable_cell] + 1
                     queue.push(neighbour)
                     self.debug_draw(neighbour, color=(224,33,216))
+    
+    def _get_enemy_states(self, game_state):
+        """ Return agent states of all opponents.  """
+        return [game_state.get_agent_state(opponent) for opponent in self.get_opponents(game_state)]
 
+    def _get_active_defenders(self, enemy_states):
+        """ Return enemy ghosts that are visible and not scared.  """
+        return [enemy for enemy in enemy_states 
+                if not enemy.is_pacman and enemy.get_position() is not None and enemy.scared_timer == 0]
+
+    def _get_scared_defenders(self, enemy_states):
+        """ Return enemy ghosts that are visible and currently scared.  """
+        return [enemy for enemy in enemy_states
+                if not enemy.is_pacman and enemy.get_position() is not None and enemy.scared_timer > 0]
+    
+    def _get_invaders(self, enemy_states):
+        """ Return enemy ghosts that are visible and currently scared.  """
+        return [enemy for enemy in enemy_states if enemy.is_pacman and enemy.get_position() is not None]
+    
+    def _closest_defender_distance(self,my_position,active_defenders):
+        """ Return the maze distance to the nearest active defender, or inf when none are visible/exist. """
+        if not active_defenders:
+            return float('inf')
+        return min(self.get_maze_distance(my_position, defender.get_position()) for defender in active_defenders)
+    
+    def _is_chased(self, my_position, active_defenders):
+       """ Return True when at least one active defender is within observable range."""
+       return self._closest_defender_distance(my_position, active_defenders) <= self.observable_distance
+     
     def choose_action(self, game_state):
         """ Picks among the actions with the highest Q(s,a). """
         actions = game_state.get_legal_actions(self.index)
@@ -272,16 +302,10 @@ class DefensiveReflexAgent(ReflexCaptureAgent):
         if is_scared:
             #FIXME: We compute enemies/defenders/... in Offensive agent as well => helper function in parent class
             #TODO: is_chased ook gebruikt in offensive agent --> helper in parent class
-            enemies = [successor.get_agent_state(i) for i in self.get_opponents(successor)]
-            defenders = [a for a in enemies if not a.is_pacman and a.get_position() is not None]
-            active_defenders = [a for a in defenders if a.scared_timer == 0]
-            is_chased = False
+            enemy_states = self._get_enemy_states(successor)
+            active_defenders = self._get_active_defenders(enemy_states)
+            is_chased = self._is_chased(my_position, active_defenders)
 
-            if active_defenders:
-                defender_distances = [self.get_maze_distance(my_position, a.get_position()) for a in active_defenders]
-                closest_defender_distance = min(defender_distances)
-                # TODO: zet self.observable_distance uit offensive in parent klas en gebruik hier in plaats van 5
-                is_chased = closest_defender_distance <= 5
             previous_position = game_state.get_agent_state(self.index).get_position()
             if my_position == self.start and previous_position != self.start:
                 features['dont_die'] = 1
@@ -301,15 +325,15 @@ class DefensiveReflexAgent(ReflexCaptureAgent):
                 features['on_defense'] = 0
 
             # Computes distance to invaders we can see
-            enemies = [successor.get_agent_state(i) for i in self.get_opponents(successor)]
-            invaders = [a for a in enemies if a.is_pacman and a.get_position() is not None]
+            enemy_states = self._get_enemy_states(successor)
+            invaders = self._get_invaders(enemy_states)
             features['num_invaders'] = len(invaders)
             if len(invaders) > 0:
                 dists = [self.get_maze_distance(my_position, a.get_position()) for a in invaders]
                 features['invader_distance'] = min(dists)
                 # Of those we see, how many are trapped in dead ends
                 # FIXME: bug
-                dist_trapped = [self.get_maze_distance(my_position, a.get_position()) for a in enemies if a in self.dead_ends]
+                dist_trapped = [self.get_maze_distance(my_position, a.get_position()) for a in enemy_states if a in self.dead_ends]
                 features['trapped_invader_distance'] = min(dist_trapped) if len(dist_trapped) > 0 else 0
 
             if action == Directions.STOP:
@@ -370,7 +394,6 @@ class OffensiveReflexAgent(ReflexCaptureAgent):
         initial_time_left -- the total game time at the start of a game
         food_cluster_radius -- the radius used to detect a cluster
         cluster_size_score_factor -- score used to reward bigger clusters
-        observable_distance -- from this distance, you can either chase or be chased due to observable distance
         endgame_home_slack -- time offset given for endgame strategy. Increase tot start the endgame strategy earlier.
         invader_close_distance -- max distance to attack enemy invaders when on own side
         dead_end_danger_factor -- a number multiplied with the depth of dead ends to give escape margin from dead-ends
@@ -384,7 +407,6 @@ class OffensiveReflexAgent(ReflexCaptureAgent):
         self.initial_time_left = 1200
         self.food_cluster_radius = 2
         self.cluster_size_score_factor = 2
-        self.observable_distance = 5
         self.endgame_home_slack = 50
         self.invader_close_distance = 3
         self.dead_end_danger_factor = 1.5
@@ -499,7 +521,6 @@ class OffensiveReflexAgent(ReflexCaptureAgent):
         my_position = game_state.get_agent_state(self.index).get_position()
         state = game_state.get_agent_state(self.index)
         # update position history
-        #TODO: is not None is hier denk ik overbodig, 'if my_position' evalueert ook naar False als None
         if my_position is not None:
             self.position_history.append(my_position)
             if len(self.position_history) > self.position_history_length:
@@ -564,23 +585,14 @@ class OffensiveReflexAgent(ReflexCaptureAgent):
             return features
       
         previous_position = game_state.get_agent_state(self.index).get_position()
-        enemies = [successor.get_agent_state(i) for i in self.get_opponents(successor)]
-        # defenders zijn tegenstanders aan de overkant die hun food verdedigen
-        #TODO: rename? zodat duidelijk dat het om enemy defenders gaat
-        defenders = [a for a in enemies if not a.is_pacman and a.get_position() is not None]
-        active_defenders = [a for a in defenders if a.scared_timer == 0]
-        scared_defenders = [a for a in defenders if a.scared_timer > 0]
-        # bijhouden van invaders: als we onderweg zijn naar de overkant, willen we soms een vijand onderweg capturen
-        invaders = [a for a in enemies if a.is_pacman and a.get_position() is not None]
+        enemy_states = self._get_enemy_states(successor)
+        active_defenders = self._get_active_defenders(enemy_states)
+        scared_defenders = self._get_scared_defenders(enemy_states)
+        invaders = self._get_invaders(enemy_states)
 
-        # we zijn chased als er actieve defenders zijn in onze directe observeerbare radius (zij zien ons)
-        is_chased = False
-        closest_defender_distance = float('inf')
-        if active_defenders:
-            defender_distances = [self.get_maze_distance(my_position, a.get_position()) for a in active_defenders]
-            closest_defender_distance = min(defender_distances)
-            is_chased = closest_defender_distance <= self.observable_distance
-
+        closest_defender_distance = self._closest_defender_distance(my_position, active_defenders)
+        is_chased = self._is_chased(my_position, active_defenders)
+        
         if my_state.is_pacman and closest_defender_distance <= self.observable_distance:
             features['ghost_proximity'] = self.observable_distance * 2 - closest_defender_distance
 
@@ -649,10 +661,9 @@ class OffensiveReflexAgent(ReflexCaptureAgent):
             if lowest_scared_timer >= 4:
                 # geen penalty voor in een dead end zolang defenders scared zijn
                 features['dead_end'] = 0
-                prev_enemies = [game_state.get_agent_state(i) for i in self.get_opponents(game_state)]
-                prev_scared = [a for a in prev_enemies if not a.is_pacman and a.scared_timer > 0 and a.get_position() is not None]
-                prev_scared_positions = [a.get_position() for a in prev_scared]
-                if my_position in prev_scared_positions:
+                previous_enemy_states = self._get_enemy_states(game_state)
+                previous_scared_positions = [enemy.get_position() for enemy in self._get_scared_defenders(previous_enemy_states)]
+                if my_position in previous_scared_positions:
                     features['ate_scared_ghost'] = 1
                 else:
                     scared_dists = [self.get_maze_distance(my_position, a.get_position()) for a in scared_defenders]
