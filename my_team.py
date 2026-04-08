@@ -218,7 +218,7 @@ class DefensiveReflexAgent(ReflexCaptureAgent):
     def register_initial_state(self, game_state):
         super().register_initial_state(game_state)
         self.previous_food = self.get_food_you_are_defending(game_state).as_list()
-        self.find_bottlenecks(game_state)
+        self._find_bottlenecks(game_state)
         # Flush any memory from previous games, see commit 28a1fa for more details
         self.last_eaten_food = None
         #TODO: betere locatie voor deze procedure?
@@ -236,8 +236,7 @@ class DefensiveReflexAgent(ReflexCaptureAgent):
                     game_state.has_wall(column, row - 1),
                     game_state.has_wall(column, row + 1)])
     
-    #TODO: Private method? Of in andere scope?
-    def find_bottlenecks(self, game_state):
+    def _find_bottlenecks(self, game_state):
         """Look for bottleneck positions on team side and assign to self.bottleneck_positions
 
         Bottleneck positions are narrow horizontal passages that may be interesting for defense.
@@ -256,8 +255,8 @@ class DefensiveReflexAgent(ReflexCaptureAgent):
                 if self._position_is_gate(row,column,game_state):
                     result.append((column, row))
         self.bottleneck_positions = result
-    #TODO: Private method? Of in andere scope?
-    def get_food_close_to_border(self, game_state):
+
+    def _get_food_close_to_border(self, game_state):
         """Returns all food pellets on the opponent's side sorted by distance to the border, closest first."""
         food_list = self.get_food(game_state).as_list()
         food_with_dist = []
@@ -266,8 +265,8 @@ class DefensiveReflexAgent(ReflexCaptureAgent):
             food_with_dist.append((dist, food))
         food_with_dist.sort()
         return [food for _, food in food_with_dist]
-    #TODO: Private method? Of in andere scope?
-    def get_border_dist(self, game_state, position):
+   
+    def _get_border_dist(self, game_state, position):
         """Returns the maze distance from position to the nearest walkable cell on the border between the two teams' halves."""
         height = game_state.data.layout.height
         border_cells = [(self.middle_x, y) for y in range(height-1) if not game_state.has_wall(self.middle_x,y)]
@@ -300,7 +299,7 @@ class DefensiveReflexAgent(ReflexCaptureAgent):
         my_position = my_state.get_position()
         scared_timer = game_state.get_agent_state(self.index).scared_timer
         is_scared = scared_timer > 0
-        should_retreat = scared_timer <= self.get_border_dist(game_state, my_position)
+        should_retreat = scared_timer <= self._get_border_dist(game_state, my_position)
         if is_scared:
             #FIXME: We compute enemies/defenders/... in Offensive agent as well => helper function in parent class
             #TODO: is_chased ook gebruikt in offensive agent --> helper in parent class
@@ -312,14 +311,14 @@ class DefensiveReflexAgent(ReflexCaptureAgent):
             if my_position == self.start and previous_position != self.start:
                 features['dont_die'] = 1
             if scared_timer > should_retreat: #FIXME: bug
-                border_food = self.get_food_close_to_border(game_state)
+                border_food = self._get_food_close_to_border(game_state)
                 if border_food:
                     distances = [self.get_maze_distance(my_position, food) for food in border_food]
                     features['raid_food_dist'] = min(distances)
                 if is_chased:
-                    features['return_home'] = self.get_border_dist(game_state, my_position)
+                    features['return_home'] = self._get_border_dist(game_state, my_position)
             else:
-                features['return_home'] = self.get_border_dist(game_state, my_position)
+                features['return_home'] = self._get_border_dist(game_state, my_position)
         else:
             # Computes whether we're on defense (1) or offense (0)
             features['on_defense'] = 1
