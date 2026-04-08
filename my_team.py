@@ -407,6 +407,8 @@ class OffensiveReflexAgent(ReflexCaptureAgent):
         self.endgame_home_slack = 50
         self.invader_close_distance = 3
         self.dead_end_danger_factor = 1.5
+        self.capsule_carrying_threshold = 4
+        self.min_scared_timer_to_chase = 4
 
 
     def register_initial_state(self, game_state):
@@ -627,15 +629,13 @@ class OffensiveReflexAgent(ReflexCaptureAgent):
         if capsules:
             capsule_distance = [self._dijkstra_distance(my_position, capsule, active_defenders) for capsule in capsules]
             features['distance_to_capsule'] = min(capsule_distance)
-            #TODO: magic constant 4
-            if is_chased or carrying >= 4:
+            if is_chased or carrying >= self.capsule_carrying_threshold:
                 # hoe meer je draagt, hoe meer je te verliezen hebt, hoe interessanter het wordt om defense van de tegenstander uit te schakelen
                 features['capsule_pressure'] = carrying
 
         if scared_defenders:
             lowest_scared_timer = min(a.scared_timer for a in scared_defenders)
-            #TODO magic constant 4
-            if lowest_scared_timer >= 4:
+            if lowest_scared_timer >= self.min_scared_timer_to_chase:
                 # geen penalty voor in een dead end zolang defenders scared zijn
                 features['dead_end'] = 0
                 previous_enemy_states = self._get_enemy_states(game_state)
