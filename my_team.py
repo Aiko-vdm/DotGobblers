@@ -274,12 +274,8 @@ class DefensiveReflexAgent(ReflexCaptureAgent):
             return 0
         return min(self.get_maze_distance(position, border_cell) for border_cell in border_cells)
 
-    def get_features(self, game_state, action):
-        #TODO: opslitsen in hulpprocedures? Of op zijn minst code blocks benoemen
-        features = util.Counter()
-        current_food = self.get_food_you_are_defending(game_state).as_list()
-
-        # code bellow checks if our food is eaten and returns the closest position for which this is the case
+    def _update_last_eaten_food(self, game_state, current_food):
+        """Checks if our food is eaten and returns the closest position for which this is the case."""
         eaten = set(self.previous_food) - set(current_food)
         if eaten:
             pos = game_state.get_agent_state(self.index).get_position()
@@ -293,9 +289,16 @@ class DefensiveReflexAgent(ReflexCaptureAgent):
             self.last_eaten_food = closest
         self.previous_food = current_food
 
+    def get_features(self, game_state, action):
+    
+        features = util.Counter()
+        current_food = self.get_food_you_are_defending(game_state).as_list()
+        self._update_last_eaten_food(game_state, current_food)
+    
         successor = self.get_successor(game_state, action)
         my_state = successor.get_agent_state(self.index)
         my_position = my_state.get_position()
+        
         scared_timer = game_state.get_agent_state(self.index).scared_timer
         is_scared = scared_timer > 0
         should_retreat = scared_timer <= self._get_border_dist(game_state, my_position)
