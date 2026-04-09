@@ -301,16 +301,23 @@ class DefensiveReflexAgent(ReflexCaptureAgent):
         
         scared_timer = game_state.get_agent_state(self.index).scared_timer
         is_scared = scared_timer > 0
+        #FIXME: bug
+        # Shoud've returned a numerical value: a threshold for when the agent should return home. Instead returns a boolean.
+        # When the scared timer has the same value as our distance to the border, we should return so that we arrive home just in time to defend again. 
         should_retreat = scared_timer <= self._get_border_dist(game_state, my_position)
-        if is_scared:
+
+        if is_scared: # Activate offensive behaviour when scared 
             enemy_states = self._get_enemy_states(successor)
             active_defenders = self._get_active_defenders(enemy_states)
             is_chased = self._is_chased(my_position, active_defenders)
 
+            # death penalty
             previous_position = game_state.get_agent_state(self.index).get_position()
             if my_position == self.start and previous_position != self.start:
                 features['dont_die'] = 1
-            if scared_timer > should_retreat: #FIXME: bug
+
+            if scared_timer > should_retreat: 
+                # We still have time to raid food near border
                 border_food = self._get_food_close_to_border(game_state)
                 if border_food:
                     distances = [self.get_maze_distance(my_position, food) for food in border_food]
@@ -319,7 +326,9 @@ class DefensiveReflexAgent(ReflexCaptureAgent):
                     features['return_home'] = self._get_border_dist(game_state, my_position)
             else:
                 features['return_home'] = self._get_border_dist(game_state, my_position)
-        else:
+
+        else: # Normal defensive behaviour
+
             # Computes whether we're on defense (1) or offense (0)
             features['on_defense'] = 1
             if my_state.is_pacman:
@@ -344,13 +353,16 @@ class DefensiveReflexAgent(ReflexCaptureAgent):
             if action == reverse_action:
                 features['reverse'] = 1
 
+            # distance to last eaten food dot on our own half
             if len(invaders) == 0 and self.last_eaten_food is not None:
                 distance = self.get_maze_distance(my_position, self.last_eaten_food)
                 features['distance_to_last_eaten_food'] = distance
 
-            #distance to a bottleneck
+            # distance to a bottleneck
             bottleneck_distance = [self.get_maze_distance(my_position, bottleneck) for bottleneck in self.bottleneck_positions]
             features['bottleneck_distance'] = min(bottleneck_distance) if bottleneck_distance else 0
+
+            # defend capsules
             capsules = self.get_capsules_you_are_defending(game_state)
             if capsules:
                 features['capsules'] = len(capsules)
@@ -397,7 +409,8 @@ class OffensiveReflexAgent(ReflexCaptureAgent):
         endgame_home_slack -- time offset given for endgame strategy. Increase tot start the endgame strategy earlier.
         invader_close_distance -- max distance to attack enemy invaders when on own side
         dead_end_danger_factor -- a number multiplied with the depth of dead ends to give escape margin from dead-ends
-
+        capsule_carrying_threshold -- minimum number of carried food dots after which capsules become more attractive
+        min_scared_timer_to_chase -- minimum remaining scared timer of enemy defenders required before the agent chases them
         """
         super().__init__(index, time_for_computing)
         self.position_history = []
@@ -537,13 +550,11 @@ class OffensiveReflexAgent(ReflexCaptureAgent):
         actions = game_state.get_legal_actions(self.index)
         legal_actions = [action for action in actions if action != Directions.STOP]
 
-        # Anti-oscillation
+        # Anti-oscillation: if we've been alternating between two cells, force a direction that is not reversing
         if len(self.position_history) >= self.position_history_length:
-            # detect when we oscillate between two positions and if so
             if (self.position_history[-1] == self.position_history[-3] and
                     self.position_history[-2] == self.position_history[-4]):
                 current_direction = game_state.get_agent_state(self.index).configuration.direction
-                # check voor legale acties die
                 non_reverse = [
                     action for action in legal_actions
                     if action != Directions.REVERSE[current_direction]
@@ -575,16 +586,19 @@ class OffensiveReflexAgent(ReflexCaptureAgent):
         closest_defender_distance = self._closest_defender_distance(my_position, active_defenders)
         is_chased = self._is_chased(my_position, active_defenders)
         
+        # ghost proximity penalty
         if my_state.is_pacman and closest_defender_distance <= self.observable_distance:
             features['ghost_proximity'] = self.observable_distance * 2 - closest_defender_distance
 
+        # death penalty
         if my_position == self.start and previous_position != self.start:
             features['dont_die'] = 1
-        # directe reward, heeft invloed op het incashen van eten
+
+        # eating food reward
         features['score'] = self.get_score(successor)
-        # geeft een meer globale druk om te eten in plaats van treuzelen of andere niet-eet acties
         features['uneaten_food'] = len(food_list)
 
+        # cluster and defender aware food targeting
         best_food, best_cluster_size, best_cost = self._best_food_target(
             successor,
             my_position,
@@ -592,54 +606,36 @@ class OffensiveReflexAgent(ReflexCaptureAgent):
             active_defenders,
         )
         if best_food is not None:
-            # opgelet: afstand tot eten is meer 'defender' aware wegens specifieke dijkstra_distance implementatie
-            # redeneren over onderstaande best door beiden features in tanden te nemen:
-                # Actie a gaat naar kleine cluster --> distance = 6, size = 2
-                # Actie b gaat naar grote cluster maar iets verder weg --> distance = 8, size = 5
-                # eval a = -1 * 6 + 1 * 2 = -4
-                # eval b = -1 * 8 + 1 * 5 = -3
-                # verhogen van cluster size zal de 'tradeoff' met de afstand beïnvloeden
             features['distance_to_cluster'] = best_cost
             features['cluster_size'] = best_cluster_size
 
+        # return home pressure (scaled with carrying food dots and urgency)
         carrying = my_state.num_carrying
         time_left = successor.data.timeleft
-        # urgency vb: low urgency begin van spel → 1 - (1200/1200) = 0
-        # hoge urgency einde van spel → 1 - (400/1200) = 0.7 (1 is hoogste urgency)
+        # urgency: 0 at the start of the game, approaches 1 near the end of the game
         urgency = 1 - (time_left / self.initial_time_left)
-        # in mentaliteit van evaluatie ook te zien als maat voor "hoe snel kan ik food in cashen?"
         distance_to_home = self._distance_to_home_position(my_position)
-
-        # meer food in bezit + langere afstand verhogen druk voor return home
-        # urgency kan multipliceren tot x3
         features['return_home'] = carrying * distance_to_home * (1 + (2 * urgency))
         
-        # manier om een finale sprint in de end game te motiveren.
-        # idee: er zijn 2 situationele condities:
-        #   Draag ik eten bij me?
-        #   Is mijn tijd aan het verlopen relatief tot over mijn afstand naar huis?
-        #       (we willen niet zomaar op basis van tijd triggeren, want je heb wel of geen tijd afhankelijk van waar je je bevindt)
-        #       (we doen de afstand plust een 'slack window', want gewoon de afstand kan te nipt zijn gezien er onderweg nog obstakels kunnen voordoen)
-        # zo ja: kijken we naar de actie: brengt het me dichter bij huis? Zo ja, cash in now!!
+        # end-game sprint: cash in now when carrying food and time is running out
         prev_distance_to_home = self._distance_to_home_position(previous_position)
         if carrying > 0 and time_left <= prev_distance_to_home + self.endgame_home_slack:
             if distance_to_home < prev_distance_to_home:
                 features['cash_in_now'] = 1
 
-        # capsules worden interessanter/belangrijker wanneer in chase of wanneer
-        # er meer voedsel in bezit is (hogere risico situatie)
+        # capsule evaluation: more interesting when we're chased or carrying a lot of food
         capsules = self.get_capsules(successor)
         if capsules:
             capsule_distance = [self._dijkstra_distance(my_position, capsule, active_defenders) for capsule in capsules]
             features['distance_to_capsule'] = min(capsule_distance)
             if is_chased or carrying >= self.capsule_carrying_threshold:
-                # hoe meer je draagt, hoe meer je te verliezen hebt, hoe interessanter het wordt om defense van de tegenstander uit te schakelen
                 features['capsule_pressure'] = carrying
 
+        # scared defender
         if scared_defenders:
             lowest_scared_timer = min(a.scared_timer for a in scared_defenders)
             if lowest_scared_timer >= self.min_scared_timer_to_chase:
-                # geen penalty voor in een dead end zolang defenders scared zijn
+                # Do not penalise dead ends while defenders are scared
                 features['dead_end'] = 0
                 previous_enemy_states = self._get_enemy_states(game_state)
                 previous_scared_positions = [enemy.get_position() for enemy in self._get_scared_defenders(previous_enemy_states)]
@@ -649,26 +645,26 @@ class OffensiveReflexAgent(ReflexCaptureAgent):
                     scared_dists = [self.get_maze_distance(my_position, a.get_position()) for a in scared_defenders]
                     features['distance_to_scared_defender'] = min(scared_dists)
 
+        # walking into non-scared defender penalty
         if active_defenders:
             for defender in active_defenders:
                 defender_position = defender.get_position()
                 if my_position == defender_position:
                     features['walk_into_defender'] = 1
 
+        # dead-end penalty when dangerous
         if my_position in self.dead_ends:
             depth = self.dead_ends[my_position]
             if closest_defender_distance <= depth * self.dead_end_danger_factor:
                 features['dead_end'] = 1
 
-
+        # own-half behaviour: penalise camping + eat invader when close enough
         if not my_state.is_pacman:
-            # manier om 'camping' op eigen grondgebied tegen te gaan
             features['steps_on_own_half'] = self.steps_on_own_half
             if invaders:
                 invader_distances = [self.get_maze_distance(my_position, a.get_position()) for a in invaders]
                 min_invader_distance = min(invader_distances)
                 if min_invader_distance <= self.invader_close_distance:
-                    # voor goedkope defensieve acties als er vijand op eigen terrein is
                     features['close_invader_distance'] = min_invader_distance
 
         return features
