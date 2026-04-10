@@ -278,13 +278,13 @@ class DefensiveReflexAgent(ReflexCaptureAgent):
         """Checks if our food is eaten and returns the closest position for which this is the case."""
         eaten = set(self.previous_food) - set(current_food)
         if eaten:
-            pos = game_state.get_agent_state(self.index).get_position()
-            min_dist = float('inf')
+            my_position = game_state.get_agent_state(self.index).get_position()
+            closest_distance = float('inf')
             closest = None
             for food in eaten:
-                dist = self.get_maze_distance(pos, food)
-                if dist < min_dist:
-                    min_dist = dist
+                distance = self.get_maze_distance(my_position, food)
+                if distance < closest_distance:
+                    closest_distance = distance
                     closest = food
             self.last_eaten_food = closest
         self.previous_food = current_food
