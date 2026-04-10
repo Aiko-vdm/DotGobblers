@@ -303,8 +303,9 @@ class DefensiveReflexAgent(ReflexCaptureAgent):
         is_scared = scared_timer > 0
         #FIXME: bug
         # Shoud've returned a numerical value: a threshold for when the agent should return home. Instead returns a boolean.
-        # When the scared timer has the same value as our distance to the border, we should return so that we arrive home just in time to defend again. 
-        should_retreat = scared_timer <= self._get_border_dist(game_state, my_position)
+        # When the scared timer has the same value as our distance to the border, we should return so that we arrive home just in time to defend again.
+        border_distance = self._get_border_dist(game_state, my_position)
+        should_retreat = scared_timer <= border_distance
 
         if is_scared: # Activate offensive behaviour when scared 
             enemy_states = self._get_enemy_states(successor)
@@ -323,9 +324,9 @@ class DefensiveReflexAgent(ReflexCaptureAgent):
                     distances = [self.get_maze_distance(my_position, food) for food in border_food]
                     features['raid_food_dist'] = min(distances)
                 if is_chased:
-                    features['return_home'] = self._get_border_dist(game_state, my_position)
+                    features['return_home'] = border_distance
             else:
-                features['return_home'] = self._get_border_dist(game_state, my_position)
+                features['return_home'] = border_distance
 
         else: # Normal defensive behaviour
 
