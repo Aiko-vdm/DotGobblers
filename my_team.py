@@ -259,13 +259,13 @@ class DefensiveReflexAgent(ReflexCaptureAgent):
     def _get_food_close_to_border(self, game_state):
         """Returns all food pellets on the opponent's side sorted by distance to the border, closest first."""
         food_list = self.get_food(game_state).as_list()
-        food_with_dist = []
+        food_by_border_distance = []
         for food in food_list:
-            dist = abs(food[0] - self.middle_x)
-            food_with_dist.append((dist, food))
-        food_with_dist.sort()
-        return [food for _, food in food_with_dist]
-   
+            border_distance = abs(food[0] - self.middle_x)
+            food_by_border_distance.append((border_distance, food))
+        food_by_border_distance.sort()
+        return [food for _, food in food_by_border_distance]
+
     def _get_border_dist(self, game_state, position):
         """Returns the maze distance from position to the nearest walkable cell on the border between the two teams' halves."""
         height = game_state.data.layout.height
