@@ -1,0 +1,360 @@
+
+Red team /Users/eliseygretchko/Repositories/unif/capture-the-flag/baseline_team with {}:
+Loading agent team: /Users/eliseygretchko/Repositories/unif/capture-the-flag/baseline_team.py
+	Arguments: {}
+
+Blue team agents/DotGobblers/analysis/ResearchTeams/submission.py with {}:
+Loading agent team: /Users/eliseygretchko/Repositories/unif/capture-the-flag/agents/DotGobblers/analysis/ResearchTeams/submission.py
+	Arguments: {}
+1
+1
+3
+1
+0
+1
+2
+0
+1
+0
+3
+0
+1
+1
+1
+3
+1
+3
+1
+0
+0
+1
+2
+1
+1
+3
+1
+2
+1
+0
+3
+0
+1
+1
+1
+0
+1
+2
+1
+2
+1
+1
+1
+1
+1
+2
+2
+1
+1
+1
+0
+0
+1
+2
+0
+1
+1
+0
+1
+1
+1
+1
+1
+0
+2
+1
+1
+0
+3
+1
+{'display': <text_display.NullGraphics object at 0x103543620>, 'red_team_name': 'baseline', 'blue_team_name': 'ReflexV3', 'agents': [<baseline_team.OffensiveReflexAgent object at 0x103543e00>, <submission.OffensiveReflexAgent object at 0x1035ec2f0>, <baseline_team.DefensiveReflexAgent object at 0x1035ec050>, <submission.DefensiveReflexAgent object at 0x1035ec6e0>], 'layouts': [<layout.Layout object at 0x1035ec830>, <layout.Layout object at 0x1035c9e50>, <layout.Layout object at 0x1035ca5d0>, <layout.Layout object at 0x103557bb0>, <layout.Layout object at 0x103557ce0>, <layout.Layout object at 0x103585910>, <layout.Layout object at 0x1035dd8c0>, <layout.Layout object at 0x1035ddae0>, <layout.Layout object at 0x103589c50>, <layout.Layout object at 0x10358a550>, <layout.Layout object at 0x1035675c0>, <layout.Layout object at 0x1035677a0>, <layout.Layout object at 0x103559fd0>, <layout.Layout object at 0x10355a5f0>, <layout.Layout object at 0x10354b1e0>, <layout.Layout object at 0x10372a5d0>, <layout.Layout object at 0x103735a90>, <layout.Layout object at 0x1035ea830>, <layout.Layout object at 0x1035ea8e0>, <layout.Layout object at 0x1035ea990>, <layout.Layout object at 0x1035eaa40>, <layout.Layout object at 0x1035eaaf0>, <layout.Layout object at 0x1035eaba0>, <layout.Layout object at 0x1035e8470>, <layout.Layout object at 0x1035e90d0>, <layout.Layout object at 0x1035eac50>, <layout.Layout object at 0x1035ead00>, <layout.Layout object at 0x1035eadb0>, <layout.Layout object at 0x1035eae60>, <layout.Layout object at 0x1035eaf10>, <layout.Layout object at 0x1035eafc0>, <layout.Layout object at 0x1035eb070>, <layout.Layout object at 0x1035eb120>, <layout.Layout object at 0x1035eb1d0>, <layout.Layout object at 0x1035eb280>, <layout.Layout object at 0x1035eb330>, <layout.Layout object at 0x1035eb3e0>, <layout.Layout object at 0x1035eb490>, <layout.Layout object at 0x1035eb540>, <layout.Layout object at 0x1035eb5f0>, <layout.Layout object at 0x1035eb6a0>, <layout.Layout object at 0x1035eb750>, <layout.Layout object at 0x1035eb800>, <layout.Layout object at 0x1035eb8b0>, <layout.Layout object at 0x1035eb960>, <layout.Layout object at 0x1035eba10>, <layout.Layout object at 0x1035ebac0>, <layout.Layout object at 0x1035ebb70>, <layout.Layout object at 0x1035ebc20>, <layout.Layout object at 0x1035ebcd0>, <layout.Layout object at 0x1035ebd80>, <layout.Layout object at 0x1035ebe30>, <layout.Layout object at 0x1035ebee0>, <layout.Layout object at 0x1037a4050>, <layout.Layout object at 0x1037a4100>, <layout.Layout object at 0x1037a41b0>, <layout.Layout object at 0x1037a4260>, <layout.Layout object at 0x1037a4310>, <layout.Layout object at 0x1037a43c0>, <layout.Layout object at 0x1037a4470>, <layout.Layout object at 0x1037a4520>, <layout.Layout object at 0x1037a45d0>, <layout.Layout object at 0x1037a4680>, <layout.Layout object at 0x1037a4730>, <layout.Layout object at 0x1037a47e0>, <layout.Layout object at 0x1037a4890>, <layout.Layout object at 0x1037a4940>, <layout.Layout object at 0x1037a49f0>, <layout.Layout object at 0x1037a4aa0>, <layout.Layout object at 0x1037a4b50>], 'length': 1200, 'num_games': 70, 'num_training': 0, 'record': True, 'catch_exceptions': True, 'delay_step': 0.0, 'match_id': 0, 'contest_name': 'ReflexV3-vs-baseline'}
+Blue team starts
+Time is up.
+The Blue team wins by 12 points.
+recorded
+Blue team starts
+Time is up.
+The Blue team wins by 22 points.
+recorded
+Blue team starts
+Time is up.
+The Blue team wins by 19 points.
+recorded
+Red team starts
+The Red team has returned at least 28.0 of the opponents' dots.
+recorded
+Red team starts
+Time is up.
+The Blue team wins by 12 points.
+recorded
+Blue team starts
+The Red team has returned at least 28.0 of the opponents' dots.
+recorded
+Red team starts
+Time is up.
+The Blue team wins by 21 points.
+recorded
+Blue team starts
+Time is up.
+The Blue team wins by 17 points.
+recorded
+Red team starts
+Time is up.
+The Blue team wins by 26 points.
+recorded
+Red team starts
+Time is up.
+The Blue team wins by 4 points.
+recorded
+Red team starts
+Time is up.
+The Blue team wins by 15 points.
+recorded
+Red team starts
+Time is up.
+The Blue team wins by 8 points.
+recorded
+Blue team starts
+Time is up.
+The Blue team wins by 16 points.
+recorded
+Blue team starts
+Time is up.
+The Blue team wins by 25 points.
+recorded
+Blue team starts
+Time is up.
+The Blue team wins by 13 points.
+recorded
+Red team starts
+Time is up.
+The Blue team wins by 15 points.
+recorded
+Red team starts
+Time is up.
+The Blue team wins by 13 points.
+recorded
+Blue team starts
+Time is up.
+The Blue team wins by 9 points.
+recorded
+Red team starts
+Time is up.
+The Blue team wins by 20 points.
+recorded
+Red team starts
+Time is up.
+The Blue team wins by 10 points.
+recorded
+Blue team starts
+Time is up.
+The Blue team wins by 10 points.
+recorded
+Red team starts
+The Red team has returned at least 28.0 of the opponents' dots.
+recorded
+Blue team starts
+The Red team has returned at least 28.0 of the opponents' dots.
+recorded
+Red team starts
+Time is up.
+The Blue team wins by 18 points.
+recorded
+Red team starts
+Time is up.
+The Blue team wins by 19 points.
+recorded
+Red team starts
+Time is up.
+The Blue team wins by 18 points.
+recorded
+Red team starts
+Time is up.
+The Blue team wins by 17 points.
+recorded
+Blue team starts
+Time is up.
+The Blue team wins by 12 points.
+recorded
+Blue team starts
+Time is up.
+The Blue team wins by 16 points.
+recorded
+Red team starts
+Time is up.
+The Blue team wins by 9 points.
+recorded
+Blue team starts
+Time is up.
+The Blue team wins by 18 points.
+recorded
+Blue team starts
+Time is up.
+The Blue team wins by 13 points.
+recorded
+Blue team starts
+The Red team has returned at least 28.0 of the opponents' dots.
+recorded
+Blue team starts
+Time is up.
+The Blue team wins by 16 points.
+recorded
+Blue team starts
+Time is up.
+The Blue team wins by 16 points.
+recorded
+Blue team starts
+Time is up.
+The Blue team wins by 18 points.
+recorded
+Red team starts
+Time is up.
+The Blue team wins by 17 points.
+recorded
+Blue team starts
+Time is up.
+Tie game!
+recorded
+Blue team starts
+Time is up.
+The Blue team wins by 17 points.
+recorded
+Blue team starts
+Time is up.
+The Blue team wins by 20 points.
+recorded
+Red team starts
+The Red team has returned at least 28.0 of the opponents' dots.
+recorded
+Red team starts
+Time is up.
+The Blue team wins by 10 points.
+recorded
+Red team starts
+Time is up.
+The Blue team wins by 5 points.
+recorded
+Red team starts
+Time is up.
+The Blue team wins by 22 points.
+recorded
+Red team starts
+Time is up.
+The Blue team wins by 23 points.
+recorded
+Red team starts
+Time is up.
+The Blue team wins by 5 points.
+recorded
+Red team starts
+Time is up.
+The Blue team wins by 11 points.
+recorded
+Red team starts
+Time is up.
+The Blue team wins by 18 points.
+recorded
+Red team starts
+Time is up.
+The Blue team wins by 18 points.
+recorded
+Blue team starts
+Time is up.
+The Blue team wins by 20 points.
+recorded
+Blue team starts
+Time is up.
+The Blue team wins by 13 points.
+recorded
+Blue team starts
+Time is up.
+The Blue team wins by 14 points.
+recorded
+Blue team starts
+Time is up.
+The Blue team wins by 12 points.
+recorded
+Red team starts
+Time is up.
+The Blue team wins by 2 points.
+recorded
+Red team starts
+Time is up.
+The Blue team wins by 10 points.
+recorded
+Blue team starts
+Time is up.
+The Blue team wins by 15 points.
+recorded
+Blue team starts
+Time is up.
+The Blue team wins by 14 points.
+recorded
+Red team starts
+Time is up.
+The Blue team wins by 15 points.
+recorded
+Blue team starts
+Time is up.
+The Blue team wins by 15 points.
+recorded
+Red team starts
+Time is up.
+The Blue team wins by 17 points.
+recorded
+Red team starts
+Time is up.
+The Blue team wins by 18 points.
+recorded
+Red team starts
+Time is up.
+The Blue team wins by 16 points.
+recorded
+Blue team starts
+Time is up.
+The Blue team wins by 16 points.
+recorded
+Red team starts
+Time is up.
+The Blue team wins by 7 points.
+recorded
+Red team starts
+Time is up.
+The Blue team wins by 15 points.
+recorded
+Blue team starts
+Time is up.
+The Blue team wins by 16 points.
+recorded
+Red team starts
+Time is up.
+The Blue team wins by 3 points.
+recorded
+Red team starts
+Time is up.
+The Blue team wins by 9 points.
+recorded
+Blue team starts
+Time is up.
+The Blue team wins by 10 points.
+recorded
+Red team starts
+Time is up.
+The Blue team wins by 17 points.
+recorded
+Average Score: -12.157142857142857
+Scores:        -12, -22, -19, 1, -12, 10, -21, -17, -26, -4, -15, -8, -16, -25, -13, -15, -13, -9, -20, -10, -10, 13, 15, -18, -19, -18, -17, -12, -16, -9, -18, -13, 3, -16, -16, -18, -17, 0, -17, -20, 24, -10, -5, -22, -23, -5, -11, -18, -18, -20, -13, -14, -12, -2, -10, -15, -14, -15, -15, -17, -18, -16, -16, -7, -15, -16, -3, -9, -10, -17
+Red Win Rate:  6/70 (0.09)
+Blue Win Rate: 63/70 (0.90)
+Record:        Blue, Blue, Blue, Red, Blue, Red, Blue, Blue, Blue, Blue, Blue, Blue, Blue, Blue, Blue, Blue, Blue, Blue, Blue, Blue, Blue, Red, Red, Blue, Blue, Blue, Blue, Blue, Blue, Blue, Blue, Blue, Red, Blue, Blue, Blue, Blue, Tie, Blue, Blue, Red, Blue, Blue, Blue, Blue, Blue, Blue, Blue, Blue, Blue, Blue, Blue, Blue, Blue, Blue, Blue, Blue, Blue, Blue, Blue, Blue, Blue, Blue, Blue, Blue, Blue, Blue, Blue, Blue, Blue
+
+Total Time Game: 104.0
