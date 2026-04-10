@@ -398,7 +398,8 @@ class DefensiveReflexAgent(ReflexCaptureAgent):
 
 class OffensiveReflexAgent(ReflexCaptureAgent):
     """
-  A reflex agent that seeks food and avoids defenders.
+  A reflex agent that seeks food and avoids defenders unless they are scared.
+  While doing so, chooses relatively safe paths by a custom dijkstra-distance method and logic to assess risky dead-ends.
   """
     def __init__(self, index, time_for_computing=.1):
         """
