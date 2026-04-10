@@ -343,6 +343,8 @@ class DefensiveReflexAgent(ReflexCaptureAgent):
                 features['invader_distance'] = min(dists)
                 # Of those we see, how many are trapped in dead ends
                 # FIXME: bug
+                #   the conditional in the list comprehension should check: if a.get_position() in self.dead_ends.
+                #   currently it searches for an agent object in a list of coördinate tuples, thus always returns false
                 dist_trapped = [self.get_maze_distance(my_position, a.get_position()) for a in enemy_states if a in self.dead_ends]
                 features['trapped_invader_distance'] = min(dist_trapped) if len(dist_trapped) > 0 else 0
 
