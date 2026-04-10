@@ -243,18 +243,18 @@ class DefensiveReflexAgent(ReflexCaptureAgent):
         These are detected by the position_is_gate function in the space between the middle and quarter-line
         of the maze.
         """
-        quarterfield_x = self.middle_x - (self.middle_x // 4) if self.red else self.middle_x + (self.middle_x // 4)
-        result = []
+        quarter_field_x = self.middle_x - (self.middle_x // 4) if self.red else self.middle_x + (self.middle_x // 4)
+        bottlenecks = []
         maze_height = game_state.data.layout.height
-        blue_columnrange = range(self.middle_x, quarterfield_x)
-        red_columnrange = range(quarterfield_x, self.middle_x)
-        columnrange = red_columnrange if self.red else blue_columnrange
-        
-        for column in columnrange:
+        blue_column_range = range(self.middle_x, quarter_field_x)
+        red_column_range = range(quarter_field_x, self.middle_x)
+        column_range = red_column_range if self.red else blue_column_range
+
+        for column in column_range:
             for row in range(1,maze_height - 1 ):
                 if self._position_is_gate(row,column,game_state):
-                    result.append((column, row))
-        self.bottleneck_positions = result
+                    bottlenecks.append((column, row))
+        self.bottleneck_positions = bottlenecks
 
     def _get_food_close_to_border(self, game_state):
         """Returns all food pellets on the opponent's side sorted by distance to the border, closest first."""
