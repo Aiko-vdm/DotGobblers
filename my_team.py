@@ -475,9 +475,9 @@ class OffensiveReflexAgent(ReflexCaptureAgent):
         # For each food, determine which is the best based on the Dijkstra measure.
         for food, size in clusters:
             path_cost = self._dijkstra_distance(my_position, food, defenders)
-            score = path_cost - (size * self.cluster_size_score_factor)
-            if score < best_cost:
-                best_cost = score
+            candidate_score = path_cost - (size * self.cluster_size_score_factor)
+            if candidate_score < best_cost:
+                best_cost = candidate_score
                 best_food = food
                 best_cluster_size = size
 
