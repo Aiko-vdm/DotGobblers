@@ -537,7 +537,7 @@ class OffensiveReflexAgent(ReflexCaptureAgent):
             - tracks position history to detect and break oscillation between two positions
         """
         my_position = game_state.get_agent_state(self.index).get_position()
-        state = game_state.get_agent_state(self.index)
+        my_state = game_state.get_agent_state(self.index)
         # update position history
         if my_position is not None:
             self.position_history.append(my_position)
@@ -545,7 +545,7 @@ class OffensiveReflexAgent(ReflexCaptureAgent):
                 self.position_history.pop(0)
 
         # count steps on own side
-        if not state.is_pacman:
+        if not my_state.is_pacman:
             self.steps_on_own_half += 1
         else:
             self.steps_on_own_half = 0
@@ -557,7 +557,7 @@ class OffensiveReflexAgent(ReflexCaptureAgent):
         if len(self.position_history) >= self.position_history_length:
             if (self.position_history[-1] == self.position_history[-3] and
                     self.position_history[-2] == self.position_history[-4]):
-                current_direction = game_state.get_agent_state(self.index).configuration.direction
+                current_direction = my_state.configuration.direction
                 non_reverse = [
                     action for action in legal_actions
                     if action != Directions.REVERSE[current_direction]
