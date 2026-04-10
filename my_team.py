@@ -21,13 +21,12 @@
 # For more info, see http://inst.eecs.berkeley.edu/~cs188/sp09/pacman.html
 
 import random
-import util
 
+import util
 from capture_agents import CaptureAgent
 from game import Directions
-from util import nearest_point
-from util import Queue
-from util import PriorityQueue
+from util import PriorityQueue, Queue, nearest_point
+
 #################
 # Team creation #
 #################
