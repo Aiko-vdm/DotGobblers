@@ -452,7 +452,7 @@ class OffensiveReflexAgent(ReflexCaptureAgent):
         """
         return min(self.get_maze_distance(position, home_pos) for home_pos in self.home_positions)
 
-    def _best_food_target(self, game_state, my_position, food_list, defenders):
+    def _best_food_target(self, my_position, food_list, defenders):
         """
         Determines the best food target at this moment:
         calculates the location and size of food clusters + 
@@ -603,7 +603,6 @@ class OffensiveReflexAgent(ReflexCaptureAgent):
 
         # cluster and defender aware food targeting
         best_food, best_cluster_size, best_cost = self._best_food_target(
-            successor,
             my_position,
             food_list,
             active_defenders,
